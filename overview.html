@@ -9,7 +9,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>Notebooks with MyST Markdown &#8212; AL Experiments</title>
+    <title>Overview &#8212; Parallelization Techniques</title>
   
   
   
@@ -61,10 +61,11 @@ const thebe_selector_input = "pre"
 const thebe_selector_output = ".output, .cell_output"
 </script>
     <script async="async" src="_static/sphinx-thebe.js"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'markdown-notebooks';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'overview';</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="prev" title="Content with notebooks" href="notebooks.html" />
+    <link rel="next" title="Basics" href="basics.html" />
+    <link rel="prev" title="Parallel Techniques with Python" href="index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -130,13 +131,13 @@ const thebe_selector_output = ".output, .cell_output"
         <div class="sidebar-primary-item">
   
 
-<a class="navbar-brand logo" href="intro.html">
+<a class="navbar-brand logo" href="index.html">
   
   
   
   
   
-    <p class="title logo__title">AL Experiments</p>
+    <p class="title logo__title">Parallelization Techniques</p>
   
 </a></div>
         <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
@@ -144,15 +145,18 @@ const thebe_selector_output = ".output, .cell_output"
         
         <ul class="nav bd-sidenav bd-sidenav__home-link">
             <li class="toctree-l1">
-                <a class="reference internal" href="intro.html">
-                    Welcome to your Jupyter Book
+                <a class="reference internal" href="index.html">
+                    Parallel Techniques with Python
                 </a>
             </li>
         </ul>
         <ul class="current nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="markdown.html">Markdown Files</a></li>
-<li class="toctree-l1"><a class="reference internal" href="notebooks.html">Content with notebooks</a></li>
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">Notebooks with MyST Markdown</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basics.html">Basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="excercises/fractal.html">Fractal Generation</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="excercises/nbody.html">N-Body Simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="excercises/pi_estimator.html">π-Estimator</a></li>
 </ul>
 
     </div>
@@ -207,7 +211,7 @@ const thebe_selector_output = ".output, .cell_output"
       
       
       
-      <li><a href="https://github.com/avivajpeyi/active_learning_experiments" target="_blank"
+      <li><a href="https://github.com/avivajpeyi/parallelization_techniques" target="_blank"
    class="btn btn-sm btn-source-repository-button dropdown-item"
    title="Source repository"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -224,7 +228,7 @@ const thebe_selector_output = ".output, .cell_output"
       
       
       
-      <li><a href="https://github.com/avivajpeyi/active_learning_experiments/issues/new?title=Issue%20on%20page%20%2Fmarkdown-notebooks.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/avivajpeyi/parallelization_techniques/issues/new?title=Issue%20on%20page%20%2Foverview.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -254,7 +258,7 @@ const thebe_selector_output = ".output, .cell_output"
       
       
       
-      <li><a href="_sources/markdown-notebooks.md" target="_blank"
+      <li><a href="_sources/overview.md" target="_blank"
    class="btn btn-sm btn-download-source-button dropdown-item"
    title="Download source file"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -336,7 +340,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Notebooks with MyST Markdown</h1>
+    <h1>Overview</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -346,9 +350,7 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#an-example-cell">An example cell</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#create-a-notebook-with-myst-markdown">Create a notebook with MyST Markdown</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#quickly-add-yaml-metadata-for-myst-notebooks">Quickly add YAML metadata for MyST Notebooks</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#flynn-s-taxonomy-and-types-of-parallelization">Flynn’s taxonomy and “types” of parallelization</a></li>
 </ul>
             </nav>
         </div>
@@ -360,45 +362,59 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article" role="main">
                   
-  <section class="tex2jax_ignore mathjax_ignore" id="notebooks-with-myst-markdown">
-<h1>Notebooks with MyST Markdown<a class="headerlink" href="#notebooks-with-myst-markdown" title="Permalink to this heading">#</a></h1>
-<p>Jupyter Book also lets you write text-based notebooks using MyST Markdown.
-See <a class="reference external" href="https://jupyterbook.org/file-types/myst-notebooks.html">the Notebooks with MyST Markdown documentation</a> for more detailed instructions.
-This page shows off a notebook written in MyST Markdown.</p>
-<section id="an-example-cell">
-<h2>An example cell<a class="headerlink" href="#an-example-cell" title="Permalink to this heading">#</a></h2>
-<p>With MyST Markdown, you can define code cells with a directive like so:</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-<p>When your book is built, the contents of any <code class="docutils literal notranslate"><span class="pre">{code-cell}</span></code> blocks will be
-executed with your default Jupyter kernel, and their outputs will be displayed
-in-line with the rest of your content.</p>
-<div class="admonition seealso">
-<p class="admonition-title">See also</p>
-<p>Jupyter Book uses <a class="reference external" href="https://jupytext.readthedocs.io/en/latest/">Jupytext</a> to convert text-based files to notebooks, and can support <a class="reference external" href="https://jupyterbook.org/file-types/jupytext.html">many other text-based notebook files</a>.</p>
-</div>
-</section>
-<section id="create-a-notebook-with-myst-markdown">
-<h2>Create a notebook with MyST Markdown<a class="headerlink" href="#create-a-notebook-with-myst-markdown" title="Permalink to this heading">#</a></h2>
-<p>MyST Markdown notebooks are defined by two things:</p>
+  <section class="tex2jax_ignore mathjax_ignore" id="overview">
+<h1>Overview<a class="headerlink" href="#overview" title="Permalink to this heading">#</a></h1>
+<p>There are several ways to increase the number of computations per second. Some include:</p>
 <ol class="arabic simple">
-<li><p>YAML metadata that is needed to understand if / how it should convert text files to notebooks (including information about the kernel needed).
-See the YAML at the top of this page for example.</p></li>
-<li><p>The presence of <code class="docutils literal notranslate"><span class="pre">{code-cell}</span></code> directives, which will be executed with your book.</p></li>
+<li><p>Increasing the number of computations per clock cycle:</p>
+<ul class="simple">
+<li><p>by adding more transistors to a single CPU</p></li>
+<li><p>by increasing the clock speed of a single CPU</p></li>
+</ul>
+</li>
+<li><p>Increasing the number of ‘workers’ crunching computations:</p>
+<ul class="simple">
+<li><p>by adding more ‘cores’ to a single machine</p></li>
+<li><p>by adding more machines to a network</p></li>
+<li><p>by using specialized hardware to do the math (e.g., GPUs, TPUs, FPGAs, etc.)</p></li>
+</ul>
+</li>
 </ol>
-<p>That’s all that is needed to get started!</p>
-</section>
-<section id="quickly-add-yaml-metadata-for-myst-notebooks">
-<h2>Quickly add YAML metadata for MyST Notebooks<a class="headerlink" href="#quickly-add-yaml-metadata-for-myst-notebooks" title="Permalink to this heading">#</a></h2>
-<p>If you have a markdown file and you’d like to quickly add YAML metadata to it, so that Jupyter Book will treat it as a MyST Markdown Notebook, run the following command:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">jupyter</span><span class="o">-</span><span class="n">book</span> <span class="n">myst</span> <span class="n">init</span> <span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">markdownfile</span><span class="o">.</span><span class="n">md</span>
+<p>The first approach is called <strong>serial</strong> computing, and the second approach is called <strong>parallel</strong> computing.</p>
+<p>Unfortunately, the first approach has hit a wall. See the figures from the <a class="reference external" href="http://cpudb.stanford.edu/visualize/clock_frequency">Standford VLSI Group’s CPU DB</a>.</p>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head text-left"><p>Features on a chip</p></th>
+<th class="head text-center"><p>Clock speed</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-left"><p><img alt="" src="_images/feature_size.png" /></p></td>
+<td class="text-center"><p><img alt="" src="_images/clock_cycle.png" /></p></td>
+</tr>
+</tbody>
+</table>
+<p>We’re unlikely to make drastic improvements in either of these in the near future, due to inherent physical
+limitations on the construction of chips and circuit boards.
+<strong>Parallel computing is a way forward.</strong></p>
+<p>The pioneer of multiprocessing, and “Father of supercomputing”, <a class="reference external" href="https://www.britannica.com/biography/Seymour-R-Cray">Seymour Cray</a>, once said:</p>
+<blockquote>
+<div><p>If you were plowing a field, which would you rather use? Two strong oxen or 1024 chickens?”</p>
+<ul class="simple">
+<li><p>Seymour Cray,</p></li>
+</ul>
+</div></blockquote>
+<p><img alt="" src="_images/chick_vs_ox.png" /></p>
+<p>Cray considered this an obvious question, as to him, it is absurd to plough a field with chickens.
+He thought it would be absurd to use several processors to crunch
+computations in parallel, in place of one fast processor to crunch computations sequentially.
+By the early 2000s, views began to shift…</p>
+<section id="flynn-s-taxonomy-and-types-of-parallelization">
+<h2>Flynn’s taxonomy and “types” of parallelization<a class="headerlink" href="#flynn-s-taxonomy-and-types-of-parallelization" title="Permalink to this heading">#</a></h2>
+<div class="highlight-note notranslate"><div class="highlight"><pre><span></span>We will focus on the SIMD (Single Instruction Multiple Data) type of parallelization.
 </pre></div>
 </div>
+<p>Very relavent video of <a class="reference external" href="https://www.youtube.com/watch?v=Tc_JWE_ypEk">several thousand chickens fighting a few T-rexes</a></p>
 </section>
 </section>
 
@@ -434,13 +450,22 @@ See the YAML at the top of this page for example.</p></li>
     <div class="footer-article-item"><!-- Previous / next buttons -->
 <div class="prev-next-area">
     <a class="left-prev"
-       href="notebooks.html"
+       href="index.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Content with notebooks</p>
+        <p class="prev-next-title">Parallel Techniques with Python</p>
       </div>
+    </a>
+    <a class="right-next"
+       href="basics.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Basics</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
     </a>
 </div></div>
   
@@ -460,9 +485,7 @@ See the YAML at the top of this page for example.</p></li>
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#an-example-cell">An example cell</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#create-a-notebook-with-myst-markdown">Create a notebook with MyST Markdown</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#quickly-add-yaml-metadata-for-myst-notebooks">Quickly add YAML metadata for MyST Notebooks</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#flynn-s-taxonomy-and-types-of-parallelization">Flynn’s taxonomy and “types” of parallelization</a></li>
 </ul>
   </nav></div>
 

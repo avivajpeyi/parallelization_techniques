@@ -1,0 +1,795 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="en" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>&lt;no title&gt; &#8212; Parallelization Techniques</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=e353d410970836974a52" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=e353d410970836974a52" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" href="../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=e353d410970836974a52" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52" />
+
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/clipboard.min.js"></script>
+    <script src="../_static/copybutton.js"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../_static/togglebutton.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../_static/design-tabs.js"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
+    <script async="async" src="../_static/sphinx-thebe.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'sources/mpi4py';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    <p class="title logo__title">Parallelization Techniques</p>
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../index.html">
+                    Parallel Techniques with Python
+                </a>
+            </li>
+        </ul>
+        <ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basics.html">Basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../excercises/fractal.html">Fractal Generation</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="../excercises/nbody.html">N-Body Simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../excercises/pi_estimator.html">π-Estimator</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/avivajpeyi/parallelization_techniques" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/avivajpeyi/parallelization_techniques/issues/new?title=Issue%20on%20page%20%2Fsources/mpi4py.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../_sources/sources/mpi4py.ipynb" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.ipynb</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+<script>
+document.write(`
+  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  </button>
+`);
+</script>
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1><no title></h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="simple visible nav section-nav flex-column">
+</ul>
+
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>try:
+    import google.colab  # noqa: F401
+except ImportError:
+    import mpi4py
+else:
+    try:
+        import mpi4py
+    except ImportError:
+        !wget &quot;https://fem-on-colab.github.io/releases/mpi4py-install.sh&quot; -O &quot;/tmp/mpi4py-install.sh&quot; &amp;&amp; bash &quot;/tmp/mpi4py-install.sh&quot;
+        import mpi4py  # noqa: F401
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>--2023-08-28 02:38:57--  https://fem-on-colab.github.io/releases/mpi4py-install.sh
+Resolving fem-on-colab.github.io (fem-on-colab.github.io)... 185.199.108.153, 185.199.109.153, 185.199.110.153, ...
+Connecting to fem-on-colab.github.io (fem-on-colab.github.io)|185.199.108.153|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 2595 (2.5K) [application/x-sh]
+Saving to: ‘/tmp/mpi4py-install.sh’
+
+
+/tmp/mpi4py-install   0%[                    ]       0  --.-KB/s               
+/tmp/mpi4py-install 100%[===================&gt;]   2.53K  --.-KB/s    in 0.001s  
+
+2023-08-28 02:38:57 (3.33 MB/s) - ‘/tmp/mpi4py-install.sh’ saved [2595/2595]
+
++ INSTALL_PREFIX=/usr/local
+++ awk -F/ &#39;{print NF-1}&#39;
+++ echo /usr/local
++ INSTALL_PREFIX_DEPTH=2
++ PROJECT_NAME=fem-on-colab
++ SHARE_PREFIX=/usr/local/share/fem-on-colab
++ MPI4PY_INSTALLED=/usr/local/share/fem-on-colab/mpi4py.installed
++ [[ ! -f /usr/local/share/fem-on-colab/mpi4py.installed ]]
++ GCC_INSTALL_SCRIPT_PATH=https://github.com/fem-on-colab/fem-on-colab.github.io/raw/195f63f/releases/gcc-install.sh
++ [[ https://github.com/fem-on-colab/fem-on-colab.github.io/raw/195f63f/releases/gcc-install.sh == http* ]]
++ GCC_INSTALL_SCRIPT_DOWNLOAD=https://github.com/fem-on-colab/fem-on-colab.github.io/raw/195f63f/releases/gcc-install.sh
++ GCC_INSTALL_SCRIPT_PATH=/tmp/gcc-install.sh
++ [[ ! -f /tmp/gcc-install.sh ]]
++ wget https://github.com/fem-on-colab/fem-on-colab.github.io/raw/195f63f/releases/gcc-install.sh -O /tmp/gcc-install.sh
+--2023-08-28 02:38:57--  https://github.com/fem-on-colab/fem-on-colab.github.io/raw/195f63f/releases/gcc-install.sh
+Resolving github.com (github.com)... 140.82.114.3
+Connecting to github.com (github.com)|140.82.114.3|:443... connected.
+HTTP request sent, awaiting response... 302 Found
+Location: https://raw.githubusercontent.com/fem-on-colab/fem-on-colab.github.io/195f63f4df27f26c318d8d7680f25e3cf2804418/releases/gcc-install.sh [following]
+--2023-08-28 02:38:57--  https://raw.githubusercontent.com/fem-on-colab/fem-on-colab.github.io/195f63f4df27f26c318d8d7680f25e3cf2804418/releases/gcc-install.sh
+Resolving raw.githubusercontent.com (raw.githubusercontent.com)... 185.199.109.133, 185.199.111.133, 185.199.110.133, ...
+Connecting to raw.githubusercontent.com (raw.githubusercontent.com)|185.199.109.133|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 7933 (7.7K) [text/plain]
+Saving to: ‘/tmp/gcc-install.sh’
+
+/tmp/gcc-install.sh 100%[===================&gt;]   7.75K  --.-KB/s    in 0s      
+
+2023-08-28 02:38:57 (72.6 MB/s) - ‘/tmp/gcc-install.sh’ saved [7933/7933]
+
++ source /tmp/gcc-install.sh
+++ set -e
+++ set -x
+++ INSTALL_PREFIX=/usr/local
++++ echo /usr/local
++++ awk -F/ &#39;{print NF-1}&#39;
+++ INSTALL_PREFIX_DEPTH=2
+++ PROJECT_NAME=fem-on-colab
+++ SHARE_PREFIX=/usr/local/share/fem-on-colab
+++ GCC_INSTALLED=/usr/local/share/fem-on-colab/gcc.installed
+++ [[ ! -L /usr/local/lib64 ]]
+++ [[ -e /usr/local/lib64 ]]
+++ rsync -avz --remove-source-files /usr/local/lib64/ /usr/local/lib
+sending incremental file list
+./
+libblosc2.a
+libblosc2.so
+libblosc2.so.2
+libblosc2.so.2.6.1
+pkgconfig/
+pkgconfig/blosc2.pc
+
+sent 1,112,132 bytes  received 242 bytes  2,224,748.00 bytes/sec
+total size is 7,408,834  speedup is 6.66
+++ rm -rf /usr/local/lib64
+++ ln -s /usr/local/lib /usr/local/lib64
+++ [[ ! -L /usr/local/lib64 ]]
+++ [[ ! -d /usr/local/lib64 ]]
+++ [[ ! -f /usr/local/share/fem-on-colab/gcc.installed ]]
+++ GCC_ARCHIVE_PATH=https://github.com/fem-on-colab/fem-on-colab/releases/download/gcc-20230817-174604-ca3c9ea/gcc-install.tar.gz
+++ [[ https://github.com/fem-on-colab/fem-on-colab/releases/download/gcc-20230817-174604-ca3c9ea/gcc-install.tar.gz == http* ]]
+++ GCC_ARCHIVE_DOWNLOAD=https://github.com/fem-on-colab/fem-on-colab/releases/download/gcc-20230817-174604-ca3c9ea/gcc-install.tar.gz
+++ GCC_ARCHIVE_PATH=/tmp/gcc-install.tar.gz
+++ wget https://github.com/fem-on-colab/fem-on-colab/releases/download/gcc-20230817-174604-ca3c9ea/gcc-install.tar.gz -O /tmp/gcc-install.tar.gz
+--2023-08-28 02:38:57--  https://github.com/fem-on-colab/fem-on-colab/releases/download/gcc-20230817-174604-ca3c9ea/gcc-install.tar.gz
+Resolving github.com (github.com)... 140.82.112.3
+Connecting to github.com (github.com)|140.82.112.3|:443... connected.
+HTTP request sent, awaiting response... 302 Found
+Location: https://objects.githubusercontent.com/github-production-release-asset-2e65be/370599515/fca4b572-0b62-4028-9b13-c670920289a0?X-Amz-Algorithm=AWS4-HMAC-SHA256&amp;X-Amz-Credential=AKIAIWNJYAX4CSVEH53A%2F20230828%2Fus-east-1%2Fs3%2Faws4_request&amp;X-Amz-Date=20230828T023858Z&amp;X-Amz-Expires=300&amp;X-Amz-Signature=911dc59877cdc5c293ec31bc3425c61bc50a8384e2164b0dc6c875025e9691e2&amp;X-Amz-SignedHeaders=host&amp;actor_id=0&amp;key_id=0&amp;repo_id=370599515&amp;response-content-disposition=attachment%3B%20filename%3Dgcc-install.tar.gz&amp;response-content-type=application%2Foctet-stream [following]
+--2023-08-28 02:38:58--  https://objects.githubusercontent.com/github-production-release-asset-2e65be/370599515/fca4b572-0b62-4028-9b13-c670920289a0?X-Amz-Algorithm=AWS4-HMAC-SHA256&amp;X-Amz-Credential=AKIAIWNJYAX4CSVEH53A%2F20230828%2Fus-east-1%2Fs3%2Faws4_request&amp;X-Amz-Date=20230828T023858Z&amp;X-Amz-Expires=300&amp;X-Amz-Signature=911dc59877cdc5c293ec31bc3425c61bc50a8384e2164b0dc6c875025e9691e2&amp;X-Amz-SignedHeaders=host&amp;actor_id=0&amp;key_id=0&amp;repo_id=370599515&amp;response-content-disposition=attachment%3B%20filename%3Dgcc-install.tar.gz&amp;response-content-type=application%2Foctet-stream
+Resolving objects.githubusercontent.com (objects.githubusercontent.com)... 185.199.111.133, 185.199.108.133, 185.199.109.133, ...
+Connecting to objects.githubusercontent.com (objects.githubusercontent.com)|185.199.111.133|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 687604540 (656M) [application/octet-stream]
+Saving to: ‘/tmp/gcc-install.tar.gz’
+
+/tmp/gcc-install.ta 100%[===================&gt;] 655.75M   165MB/s    in 4.1s    
+
+2023-08-28 02:39:02 (162 MB/s) - ‘/tmp/gcc-install.tar.gz’ saved [687604540/687604540]
+
+++ [[ /tmp/gcc-install.tar.gz != skip ]]
+++ tar -xzf /tmp/gcc-install.tar.gz --strip-components=2 --directory=/usr/local
+++ apt install -y -qq zlib1g-dev
+zlib1g-dev is already the newest version (1:1.2.11.dfsg-2ubuntu9.2).
+zlib1g-dev set to manually installed.
+0 upgraded, 0 newly installed, 0 to remove and 16 not upgraded.
+++ [[ /tmp/gcc-install.tar.gz != skip ]]
+++ for LEGACY_GPP in /usr/bin/g++-*
++++ /usr/bin/g++-11 -dumpversion
+++ LEGACY_GCC_VERSION=11
+++ update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-11 11
+update-alternatives: using /usr/bin/g++-11 to provide /usr/bin/g++ (g++) in auto mode
+++ update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 11
+update-alternatives: using /usr/bin/gcc-11 to provide /usr/bin/gcc (gcc) in auto mode
+++ update-alternatives --install /usr/bin/gcc-ar gcc-ar /usr/bin/gcc-ar-11 11
+update-alternatives: using /usr/bin/gcc-ar-11 to provide /usr/bin/gcc-ar (gcc-ar) in auto mode
+++ update-alternatives --install /usr/bin/gcc-nm gcc-nm /usr/bin/gcc-nm-11 11
+update-alternatives: using /usr/bin/gcc-nm-11 to provide /usr/bin/gcc-nm (gcc-nm) in auto mode
+++ update-alternatives --install /usr/bin/gcc-ranlib gcc-ranlib /usr/bin/gcc-ranlib-11 11
+update-alternatives: using /usr/bin/gcc-ranlib-11 to provide /usr/bin/gcc-ranlib (gcc-ranlib) in auto mode
+++ update-alternatives --install /usr/bin/x86_64-linux-gnu-g++ x86_64-linux-gnu-g++ /usr/bin/x86_64-linux-gnu-g++-11 11
+update-alternatives: using /usr/bin/x86_64-linux-gnu-g++-11 to provide /usr/bin/x86_64-linux-gnu-g++ (x86_64-linux-gnu-g++) in auto mode
+++ update-alternatives --install /usr/bin/x86_64-linux-gnu-gcc x86_64-linux-gnu-gcc /usr/bin/x86_64-linux-gnu-gcc-11 11
+update-alternatives: using /usr/bin/x86_64-linux-gnu-gcc-11 to provide /usr/bin/x86_64-linux-gnu-gcc (x86_64-linux-gnu-gcc) in auto mode
+++ update-alternatives --install /usr/bin/x86_64-linux-gnu-gcc-ar x86_64-linux-gnu-gcc-ar /usr/bin/x86_64-linux-gnu-gcc-ar-11 11
+update-alternatives: using /usr/bin/x86_64-linux-gnu-gcc-ar-11 to provide /usr/bin/x86_64-linux-gnu-gcc-ar (x86_64-linux-gnu-gcc-ar) in auto mode
+++ update-alternatives --install /usr/bin/x86_64-linux-gnu-gcc-nm x86_64-linux-gnu-gcc-nm /usr/bin/x86_64-linux-gnu-gcc-nm-11 11
+update-alternatives: using /usr/bin/x86_64-linux-gnu-gcc-nm-11 to provide /usr/bin/x86_64-linux-gnu-gcc-nm (x86_64-linux-gnu-gcc-nm) in auto mode
+++ update-alternatives --install /usr/bin/x86_64-linux-gnu-gcc-ranlib x86_64-linux-gnu-gcc-ranlib /usr/bin/x86_64-linux-gnu-gcc-ranlib-11 11
+update-alternatives: using /usr/bin/x86_64-linux-gnu-gcc-ranlib-11 to provide /usr/bin/x86_64-linux-gnu-gcc-ranlib (x86_64-linux-gnu-gcc-ranlib) in auto mode
++++ /usr/local/bin/g++ -dumpversion
+++ GCC_VERSION=12
+++ update-alternatives --install /usr/bin/g++ g++ /usr/local/bin/g++-12 12
+update-alternatives: using /usr/local/bin/g++-12 to provide /usr/bin/g++ (g++) in auto mode
+++ update-alternatives --install /usr/bin/gcc gcc /usr/local/bin/gcc-12 12
+update-alternatives: using /usr/local/bin/gcc-12 to provide /usr/bin/gcc (gcc) in auto mode
+++ update-alternatives --install /usr/bin/gcc-ar gcc-ar /usr/local/bin/gcc-ar-12 12
+update-alternatives: using /usr/local/bin/gcc-ar-12 to provide /usr/bin/gcc-ar (gcc-ar) in auto mode
+++ update-alternatives --install /usr/bin/gcc-nm gcc-nm /usr/local/bin/gcc-nm-12 12
+update-alternatives: using /usr/local/bin/gcc-nm-12 to provide /usr/bin/gcc-nm (gcc-nm) in auto mode
+++ update-alternatives --install /usr/bin/gcc-ranlib gcc-ranlib /usr/local/bin/gcc-ranlib-12 12
+update-alternatives: using /usr/local/bin/gcc-ranlib-12 to provide /usr/bin/gcc-ranlib (gcc-ranlib) in auto mode
+++ update-alternatives --install /usr/bin/gfortran gfortran /usr/local/bin/gfortran-12 12
+update-alternatives: using /usr/local/bin/gfortran-12 to provide /usr/bin/gfortran (gfortran) in auto mode
+++ update-alternatives --install /usr/bin/x86_64-linux-gnu-g++ x86_64-linux-gnu-g++ /usr/local/bin/x86_64-linux-gnu-g++-12 12
+update-alternatives: using /usr/local/bin/x86_64-linux-gnu-g++-12 to provide /usr/bin/x86_64-linux-gnu-g++ (x86_64-linux-gnu-g++) in auto mode
+++ update-alternatives --install /usr/bin/x86_64-linux-gnu-gcc x86_64-linux-gnu-gcc /usr/local/bin/x86_64-linux-gnu-gcc-12 12
+update-alternatives: using /usr/local/bin/x86_64-linux-gnu-gcc-12 to provide /usr/bin/x86_64-linux-gnu-gcc (x86_64-linux-gnu-gcc) in auto mode
+++ update-alternatives --install /usr/bin/x86_64-linux-gnu-gcc-ar x86_64-linux-gnu-gcc-ar /usr/local/bin/x86_64-linux-gnu-gcc-ar-12 12
+update-alternatives: using /usr/local/bin/x86_64-linux-gnu-gcc-ar-12 to provide /usr/bin/x86_64-linux-gnu-gcc-ar (x86_64-linux-gnu-gcc-ar) in auto mode
+++ update-alternatives --install /usr/bin/x86_64-linux-gnu-gcc-nm x86_64-linux-gnu-gcc-nm /usr/local/bin/x86_64-linux-gnu-gcc-nm-12 12
+update-alternatives: using /usr/local/bin/x86_64-linux-gnu-gcc-nm-12 to provide /usr/bin/x86_64-linux-gnu-gcc-nm (x86_64-linux-gnu-gcc-nm) in auto mode
+++ update-alternatives --install /usr/bin/x86_64-linux-gnu-gcc-ranlib x86_64-linux-gnu-gcc-ranlib /usr/local/bin/x86_64-linux-gnu-gcc-ranlib-12 12
+update-alternatives: using /usr/local/bin/x86_64-linux-gnu-gcc-ranlib-12 to provide /usr/bin/x86_64-linux-gnu-gcc-ranlib (x86_64-linux-gnu-gcc-ranlib) in auto mode
+++ update-alternatives --set g++ /usr/local/bin/g++-12
+++ update-alternatives --set gcc /usr/local/bin/gcc-12
+++ update-alternatives --set gcc-ar /usr/local/bin/gcc-ar-12
+++ update-alternatives --set gcc-nm /usr/local/bin/gcc-nm-12
+++ update-alternatives --set gcc-ranlib /usr/local/bin/gcc-ranlib-12
+++ update-alternatives --set gfortran /usr/local/bin/gfortran-12
+++ update-alternatives --set x86_64-linux-gnu-g++ /usr/local/bin/x86_64-linux-gnu-g++-12
+++ update-alternatives --set x86_64-linux-gnu-gcc /usr/local/bin/x86_64-linux-gnu-gcc-12
+++ update-alternatives --set x86_64-linux-gnu-gcc-ar /usr/local/bin/x86_64-linux-gnu-gcc-ar-12
+++ update-alternatives --set x86_64-linux-gnu-gcc-nm /usr/local/bin/x86_64-linux-gnu-gcc-nm-12
+++ update-alternatives --set x86_64-linux-gnu-gcc-ranlib /usr/local/bin/x86_64-linux-gnu-gcc-ranlib-12
+++ LIBSTDCXX_REPLACED=no
+++ [[ /tmp/gcc-install.tar.gz != skip ]]
++++ which python3
+++ PYTHON_EXEC=/usr/bin/python3
++++ dirname /usr/bin/python3
+++ PYTHON_EXEC_DIR=/usr/bin
++++ objdump -x /usr/bin/python3
++++ sed &#39;s| ||g&#39;
++++ sed &#39;s|R.*PATH||g&#39;
++++ sed &#39;s|$ORIGIN|/usr/bin|g&#39;
++++ grep &#39;R.*PATH&#39;
+++ PYTHON_RPATH=
+++ [[ -z &#39;&#39; ]]
+++ PYTHON_RPATH=/usr/lib/x86_64-linux-gnu
+++ INSTALL_PREFIX_RPATH=/usr/local/lib
++++ basename /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30
+++ LIBSTDCXX_SYSTEM_VERSION=libstdc++.so.6.0.30
++++ basename /usr/local/lib/libstdc++.so.6.0.30 /usr/local/lib/libstdc++.so.6.0.30-gdb.py
+++ LIBSTDCXX_INSTALL_PREFIX_VERSION=libstdc++.so.6.0.30
+++ [[ libstdc++.so.6.0.30 != \l\i\b\s\t\d\c\+\+\.\s\o\.\6\.\0\.\3\0 ]]
+++ mkdir -p /usr/local/share/fem-on-colab
+++ touch /usr/local/share/fem-on-colab/gcc.installed
+++ [[ no != \n\o ]]
++ MPI4PY_ARCHIVE_PATH=https://github.com/fem-on-colab/fem-on-colab/releases/download/mpi4py-20230817-182017-ca3c9ea/mpi4py-install.tar.gz
++ [[ https://github.com/fem-on-colab/fem-on-colab/releases/download/mpi4py-20230817-182017-ca3c9ea/mpi4py-install.tar.gz == http* ]]
++ MPI4PY_ARCHIVE_DOWNLOAD=https://github.com/fem-on-colab/fem-on-colab/releases/download/mpi4py-20230817-182017-ca3c9ea/mpi4py-install.tar.gz
++ MPI4PY_ARCHIVE_PATH=/tmp/mpi4py-install.tar.gz
++ wget https://github.com/fem-on-colab/fem-on-colab/releases/download/mpi4py-20230817-182017-ca3c9ea/mpi4py-install.tar.gz -O /tmp/mpi4py-install.tar.gz
+--2023-08-28 02:39:20--  https://github.com/fem-on-colab/fem-on-colab/releases/download/mpi4py-20230817-182017-ca3c9ea/mpi4py-install.tar.gz
+Resolving github.com (github.com)... 140.82.112.3
+Connecting to github.com (github.com)|140.82.112.3|:443... connected.
+HTTP request sent, awaiting response... 302 Found
+Location: https://objects.githubusercontent.com/github-production-release-asset-2e65be/370599515/064b1b63-d0ef-4947-b140-1ac16083a4b1?X-Amz-Algorithm=AWS4-HMAC-SHA256&amp;X-Amz-Credential=AKIAIWNJYAX4CSVEH53A%2F20230828%2Fus-east-1%2Fs3%2Faws4_request&amp;X-Amz-Date=20230828T023920Z&amp;X-Amz-Expires=300&amp;X-Amz-Signature=950c119e3b7e615832efc9fbeac3854337898c3db66d15c3b00d9e3b584bdfa7&amp;X-Amz-SignedHeaders=host&amp;actor_id=0&amp;key_id=0&amp;repo_id=370599515&amp;response-content-disposition=attachment%3B%20filename%3Dmpi4py-install.tar.gz&amp;response-content-type=application%2Foctet-stream [following]
+--2023-08-28 02:39:20--  https://objects.githubusercontent.com/github-production-release-asset-2e65be/370599515/064b1b63-d0ef-4947-b140-1ac16083a4b1?X-Amz-Algorithm=AWS4-HMAC-SHA256&amp;X-Amz-Credential=AKIAIWNJYAX4CSVEH53A%2F20230828%2Fus-east-1%2Fs3%2Faws4_request&amp;X-Amz-Date=20230828T023920Z&amp;X-Amz-Expires=300&amp;X-Amz-Signature=950c119e3b7e615832efc9fbeac3854337898c3db66d15c3b00d9e3b584bdfa7&amp;X-Amz-SignedHeaders=host&amp;actor_id=0&amp;key_id=0&amp;repo_id=370599515&amp;response-content-disposition=attachment%3B%20filename%3Dmpi4py-install.tar.gz&amp;response-content-type=application%2Foctet-stream
+Resolving objects.githubusercontent.com (objects.githubusercontent.com)... 185.199.108.133, 185.199.109.133, 185.199.110.133, ...
+Connecting to objects.githubusercontent.com (objects.githubusercontent.com)|185.199.108.133|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 8848171 (8.4M) [application/octet-stream]
+Saving to: ‘/tmp/mpi4py-install.tar.gz’
+
+/tmp/mpi4py-install 100%[===================&gt;]   8.44M  --.-KB/s    in 0.03s   
+
+2023-08-28 02:39:20 (272 MB/s) - ‘/tmp/mpi4py-install.tar.gz’ saved [8848171/8848171]
+
++ [[ /tmp/mpi4py-install.tar.gz != skip ]]
++ tar -xzf /tmp/mpi4py-install.tar.gz --strip-components=2 --directory=/usr/local
++ [[ /tmp/mpi4py-install.tar.gz != skip ]]
++ command -v mpicc
+/usr/local/bin/mpicc
++ [[ /tmp/mpi4py-install.tar.gz != skip ]]
++ MPI_LIBS=(&#39;libmca*.so*&#39; &#39;libmpi*.so*&#39; &#39;libompi*.so*&#39; &#39;libopen-pal*.so*&#39; &#39;libopen-rte*.so*&#39; &#39;ompi*.so*&#39;)
++ for MPI_LIB in &quot;${MPI_LIBS[@]}&quot;
++ rm -f &#39;/usr/lib/libmca*.so*&#39;
++ rm -f /usr/lib/x86_64-linux-gnu/libmca_common_monitoring.so /usr/lib/x86_64-linux-gnu/libmca_common_monitoring.so.50 /usr/lib/x86_64-linux-gnu/libmca_common_monitoring.so.50.20.0 /usr/lib/x86_64-linux-gnu/libmca_common_ofi.so /usr/lib/x86_64-linux-gnu/libmca_common_ofi.so.10 /usr/lib/x86_64-linux-gnu/libmca_common_ofi.so.10.0.2 /usr/lib/x86_64-linux-gnu/libmca_common_ompio.so /usr/lib/x86_64-linux-gnu/libmca_common_ompio.so.41 /usr/lib/x86_64-linux-gnu/libmca_common_ompio.so.41.29.2 /usr/lib/x86_64-linux-gnu/libmca_common_sm.so /usr/lib/x86_64-linux-gnu/libmca_common_sm.so.40 /usr/lib/x86_64-linux-gnu/libmca_common_sm.so.40.30.0 /usr/lib/x86_64-linux-gnu/libmca_common_ucx.so /usr/lib/x86_64-linux-gnu/libmca_common_ucx.so.40 /usr/lib/x86_64-linux-gnu/libmca_common_ucx.so.40.30.1 /usr/lib/x86_64-linux-gnu/libmca_common_verbs.so /usr/lib/x86_64-linux-gnu/libmca_common_verbs.so.40 /usr/lib/x86_64-linux-gnu/libmca_common_verbs.so.40.30.0
++ ln -fs /usr/local/lib/libmca_common_dstore.so /usr/local/lib/libmca_common_dstore.so.1 /usr/local/lib/libmca_common_dstore.so.1.0.2 /usr/local/lib/libmca_common_monitoring.so /usr/local/lib/libmca_common_monitoring.so.50 /usr/local/lib/libmca_common_monitoring.so.50.20.0 /usr/local/lib/libmca_common_ompio.so /usr/local/lib/libmca_common_ompio.so.41 /usr/local/lib/libmca_common_ompio.so.41.29.4 /usr/local/lib/libmca_common_sm.so /usr/local/lib/libmca_common_sm.so.40 /usr/local/lib/libmca_common_sm.so.40.30.0 /usr/local/lib/libmca_common_verbs.so /usr/local/lib/libmca_common_verbs.so.40 /usr/local/lib/libmca_common_verbs.so.40.30.0 /usr/lib
++ for MPI_LIB in &quot;${MPI_LIBS[@]}&quot;
++ rm -f &#39;/usr/lib/libmpi*.so*&#39;
++ rm -f /usr/lib/x86_64-linux-gnu/libmpi_cxx.so /usr/lib/x86_64-linux-gnu/libmpi_cxx.so.40 /usr/lib/x86_64-linux-gnu/libmpi_cxx.so.40.30.1 /usr/lib/x86_64-linux-gnu/libmpi_java.so /usr/lib/x86_64-linux-gnu/libmpi_java.so.40 /usr/lib/x86_64-linux-gnu/libmpi_java.so.40.30.0 /usr/lib/x86_64-linux-gnu/libmpi_mpifh-gfortran.so /usr/lib/x86_64-linux-gnu/libmpi_mpifh-gfortran.so.40 /usr/lib/x86_64-linux-gnu/libmpi_mpifh-gfortran.so.40.30.0 /usr/lib/x86_64-linux-gnu/libmpi_mpifh.so /usr/lib/x86_64-linux-gnu/libmpi_mpifh.so.40 /usr/lib/x86_64-linux-gnu/libmpi_mpifh.so.40.30.0 /usr/lib/x86_64-linux-gnu/libmpi++.so /usr/lib/x86_64-linux-gnu/libmpi.so /usr/lib/x86_64-linux-gnu/libmpi.so.40 /usr/lib/x86_64-linux-gnu/libmpi.so.40.30.2 /usr/lib/x86_64-linux-gnu/libmpi_usempif08-gfortran.so /usr/lib/x86_64-linux-gnu/libmpi_usempif08-gfortran.so.40 /usr/lib/x86_64-linux-gnu/libmpi_usempif08-gfortran.so.40.30.0 /usr/lib/x86_64-linux-gnu/libmpi_usempif08.so /usr/lib/x86_64-linux-gnu/libmpi_usempif08.so.40 /usr/lib/x86_64-linux-gnu/libmpi_usempif08.so.40.30.0 /usr/lib/x86_64-linux-gnu/libmpi_usempi_ignore_tkr-gfortran.so /usr/lib/x86_64-linux-gnu/libmpi_usempi_ignore_tkr-gfortran.so.40 /usr/lib/x86_64-linux-gnu/libmpi_usempi_ignore_tkr-gfortran.so.40.30.0 /usr/lib/x86_64-linux-gnu/libmpi_usempi_ignore_tkr.so /usr/lib/x86_64-linux-gnu/libmpi_usempi_ignore_tkr.so.40 /usr/lib/x86_64-linux-gnu/libmpi_usempi_ignore_tkr.so.40.30.0
++ ln -fs /usr/local/lib/libmpi_cxx.so /usr/local/lib/libmpi_cxx.so.40 /usr/local/lib/libmpi_cxx.so.40.30.1 /usr/local/lib/libmpi_mpifh.so /usr/local/lib/libmpi_mpifh.so.40 /usr/local/lib/libmpi_mpifh.so.40.30.0 /usr/local/lib/libmpi.so /usr/local/lib/libmpi.so.40 /usr/local/lib/libmpi.so.40.30.5 /usr/local/lib/libmpi_usempif08.so /usr/local/lib/libmpi_usempif08.so.40 /usr/local/lib/libmpi_usempif08.so.40.30.0 /usr/local/lib/libmpi_usempi_ignore_tkr.so /usr/local/lib/libmpi_usempi_ignore_tkr.so.40 /usr/local/lib/libmpi_usempi_ignore_tkr.so.40.30.0 /usr/lib
++ for MPI_LIB in &quot;${MPI_LIBS[@]}&quot;
++ rm -f &#39;/usr/lib/libompi*.so*&#39;
++ rm -f /usr/lib/x86_64-linux-gnu/libompitrace.so /usr/lib/x86_64-linux-gnu/libompitrace.so.40 /usr/lib/x86_64-linux-gnu/libompitrace.so.40.30.0
++ ln -fs /usr/local/lib/libompitrace.so /usr/local/lib/libompitrace.so.40 /usr/local/lib/libompitrace.so.40.30.1 /usr/lib
++ for MPI_LIB in &quot;${MPI_LIBS[@]}&quot;
++ rm -f &#39;/usr/lib/libopen-pal*.so*&#39;
++ rm -f /usr/lib/x86_64-linux-gnu/libopen-pal.so /usr/lib/x86_64-linux-gnu/libopen-pal.so.40 /usr/lib/x86_64-linux-gnu/libopen-pal.so.40.30.2
++ ln -fs /usr/local/lib/libopen-pal.so /usr/local/lib/libopen-pal.so.40 /usr/local/lib/libopen-pal.so.40.30.3 /usr/lib
++ for MPI_LIB in &quot;${MPI_LIBS[@]}&quot;
++ rm -f &#39;/usr/lib/libopen-rte*.so*&#39;
++ rm -f /usr/lib/x86_64-linux-gnu/libopen-rte.so /usr/lib/x86_64-linux-gnu/libopen-rte.so.40 /usr/lib/x86_64-linux-gnu/libopen-rte.so.40.30.2
++ ln -fs /usr/local/lib/libopen-rte.so /usr/local/lib/libopen-rte.so.40 /usr/local/lib/libopen-rte.so.40.30.3 /usr/lib
++ for MPI_LIB in &quot;${MPI_LIBS[@]}&quot;
++ rm -f &#39;/usr/lib/ompi*.so*&#39;
++ rm -f &#39;/usr/lib/x86_64-linux-gnu/ompi*.so*&#39;
++ ln -fs /usr/local/lib/ompi_monitoring_prof.so /usr/lib
++ mkdir -p /usr/local/share/fem-on-colab
++ touch /usr/local/share/fem-on-colab/mpi4py.installed
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">mpi4py.MPI</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">assert</span> <span class="n">mpi4py</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">COMM_WORLD</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">1</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">mpi4py</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">Is_initialized</span><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">mpi4py</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">Is_finalized</span><span class="p">():</span>
+    <span class="n">mpi4py</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">Finalize</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="n">file</span> <span class="n">helloworld</span><span class="o">.</span><span class="n">cpp</span>
+<span class="c1">#include &lt;mpi.h&gt;</span>
+
+<span class="nb">int</span> <span class="n">main</span><span class="p">(</span><span class="nb">int</span> <span class="n">argc</span><span class="p">,</span> <span class="n">char</span><span class="o">**</span> <span class="n">argv</span><span class="p">)</span> <span class="p">{</span>
+    <span class="o">//</span> <span class="n">Initialize</span> <span class="n">the</span> <span class="n">MPI</span> <span class="n">environment</span>
+    <span class="n">MPI_Init</span><span class="p">(</span><span class="n">NULL</span><span class="p">,</span> <span class="n">NULL</span><span class="p">);</span>
+
+    <span class="o">//</span> <span class="n">Get</span> <span class="n">the</span> <span class="n">number</span> <span class="n">of</span> <span class="n">processes</span>
+    <span class="nb">int</span> <span class="n">world_size</span><span class="p">;</span>
+    <span class="n">MPI_Comm_size</span><span class="p">(</span><span class="n">MPI_COMM_WORLD</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">world_size</span><span class="p">);</span>
+
+    <span class="o">//</span> <span class="n">Get</span> <span class="n">the</span> <span class="n">rank</span> <span class="n">of</span> <span class="n">the</span> <span class="n">process</span>
+    <span class="nb">int</span> <span class="n">world_rank</span><span class="p">;</span>
+    <span class="n">MPI_Comm_rank</span><span class="p">(</span><span class="n">MPI_COMM_WORLD</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">world_rank</span><span class="p">);</span>
+
+    <span class="n">printf</span><span class="p">(</span><span class="s2">&quot;Hello world! from rank </span><span class="si">%d</span><span class="s2">&quot;</span>
+           <span class="s2">&quot; out of </span><span class="si">%d</span><span class="s2"> processors</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+           <span class="n">world_rank</span><span class="p">,</span> <span class="n">world_size</span><span class="p">);</span>
+
+    <span class="o">//</span> <span class="n">Finalize</span> <span class="n">the</span> <span class="n">MPI</span> <span class="n">environment</span><span class="o">.</span>
+    <span class="n">MPI_Finalize</span><span class="p">();</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Writing helloworld.cpp
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="n">bash</span>
+
+<span class="n">mpicxx</span> <span class="o">-</span><span class="n">std</span><span class="o">=</span><span class="n">c</span><span class="o">++</span><span class="mi">11</span> <span class="o">-</span><span class="n">static</span><span class="o">-</span><span class="n">libstdc</span><span class="o">++</span> <span class="n">helloworld</span><span class="o">.</span><span class="n">cpp</span> <span class="o">-</span><span class="n">o</span> <span class="n">helloworld</span>
+<span class="o">./</span><span class="n">helloworld</span>
+<span class="n">mpirun</span> <span class="o">--</span><span class="n">allow</span><span class="o">-</span><span class="n">run</span><span class="o">-</span><span class="k">as</span><span class="o">-</span><span class="n">root</span> <span class="o">--</span><span class="n">oversubscribe</span> <span class="o">-</span><span class="n">n</span> <span class="mi">2</span> <span class="o">./</span><span class="n">helloworld</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Hello world! from rank 0 out of 1 processors
+Hello world! from rank 0 out of 2 processors
+Hello world! from rank 1 out of 2 processors
+</pre></div>
+</div>
+</div>
+</div>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./sources"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+                <footer class="bd-footer-article">
+                  
+<div class="footer-article-items footer-article__inner">
+  
+    <div class="footer-article-item"><!-- Previous / next buttons -->
+<div class="prev-next-area">
+</div></div>
+  
+</div>
+
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="simple visible nav section-nav flex-column">
+</ul>
+
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Avi
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  <p class="copyright">
+    
+      © Copyright 2022.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=e353d410970836974a52"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

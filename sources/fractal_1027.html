@@ -1,0 +1,1438 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="en" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>Fun With Fractals and CuPy on GPU &#8212; Parallelization Techniques</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=e353d410970836974a52" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=e353d410970836974a52" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" href="../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=e353d410970836974a52" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52" />
+
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/clipboard.min.js"></script>
+    <script src="../_static/copybutton.js"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../_static/togglebutton.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../_static/design-tabs.js"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
+    <script async="async" src="../_static/sphinx-thebe.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'sources/fractal_1027';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    <p class="title logo__title">Parallelization Techniques</p>
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../index.html">
+                    Parallel Techniques with Python
+                </a>
+            </li>
+        </ul>
+        <ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basics.html">Basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../excercises/fractal.html">Fractal Generation</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="../excercises/nbody.html">N-Body Simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../excercises/pi_estimator.html">π-Estimator</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/avivajpeyi/parallelization_techniques" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/avivajpeyi/parallelization_techniques/issues/new?title=Issue%20on%20page%20%2Fsources/fractal_1027.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../_sources/sources/fractal_1027.ipynb" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.ipynb</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+<script>
+document.write(`
+  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  </button>
+`);
+</script>
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Fun With Fractals and CuPy on GPU</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Fun With Fractals and CuPy on GPU</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#background">Background</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hardware">Hardware</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#summary-of-findings-aggregated-from-running-the-notebook">Summary of findings aggregated from running the notebook.</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cupy-sanity-checks">CuPy Sanity Checks</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cpu-numpy-fractal-generation-speed-test">2. (CPU / Numpy) Fractal Generation Speed Test</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#gpu-implementation">3. GPU Implementation</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#define-the-cuda-kernel-using-cupy-elementwisekernel">Define the CUDA Kernel using CuPy <code class="docutils literal notranslate"><span class="pre">ElementwiseKernel</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gpu-timing-tests">GPU Timing Tests</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#speed-summary">Speed Summary</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#interactive-fractals">4. Interactive Fractals!</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#create-a-desktop-wallpaper-of-your-fractal">Create a desktop wallpaper of your fractal!</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gpu-fractal-search">5. GPU Fractal Search!</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#simple-data-pipeline-through-the-gpu">Simple data pipeline through the GPU</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-good-fractal-map-is-a-fractal">The Good-Fractal Map is … a fractal ?!</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cubic-fractal">Cubic Fractal</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#good-fractal-map-for-the-z-sup-3-sup-c-variant">“Good Fractal Map” for the z<sup>3</sup> + c Variant</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fft-timings-cpu-gpu-agnostic-code">FFT Timings &amp; CPU/GPU-Agnostic Code</a></li>
+</ul>
+</li>
+</ul>
+
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section id="fun-with-fractals-and-cupy-on-gpu">
+<h1>Fun With Fractals and CuPy on GPU<a class="headerlink" href="#fun-with-fractals-and-cupy-on-gpu" title="Permalink to this heading">#</a></h1>
+<p>This is the notebook that was used to generate the results for my blog post at (<span class="xref myst">TBD</span>).  The goal was to find a fun way to demonstrate the power of CuPy, which is effectively a GPU-accelerated clone of Numpy.  CuPy is both powerful, and fits cleanly into the <a class="reference external" href="https://rapids.ai/">RAPIDS</a> ecosystem, even though it’s technically not part of RAPIDS.</p>
+<p><strong>NOTE</strong>: The interactive visualizations <strong>will not</strong> work on Google Colab; it has a different widget/interaction system than Jupyter.  I ran this on a Linux desktop using JupyterLab 3.0 with the <code class="docutils literal notranslate"><span class="pre">mpl_interactions</span></code> package.  See <code class="docutils literal notranslate"><span class="pre">requirements.txt</span></code>. However most of the notebook will run on Colab, but you might need to remove the <code class="docutils literal notranslate"><span class="pre">%matplotlib</span> <span class="pre">widget</span></code> statement at the beginning of the notebook.</p>
+</section>
+<section id="background">
+<h1>Background<a class="headerlink" href="#background" title="Permalink to this heading">#</a></h1>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/Julia_set">Julia sets</a> are fractals based on simple mathematical constructs that produce surprisingly unintutive geometric patterns.  Not only are the patterns visually pleasing, but have infinitely-recursing structure as seen in the following gif from Wikipedia:</p>
+<p><img alt="" src="https://upload.wikimedia.org/wikipedia/commons/a/a4/Mandelbrot_sequence_new.gif" /></p>
+<p>The animated gif is showing unbounded zooming of the <a class="reference external" href="https://en.wikipedia.org/wiki/Mandelbrot_set">Mandelbrot set</a>, which is closely related to the <a class="reference external" href="https://en.wikipedia.org/wiki/Julia_set">Julia Sets</a>.  You could produce a similar gif of any of the Julia sets produced with this notebook (given a sufficiently wide floating-point datatype).</p>
+<p>In this notebook we will:</p>
+<ul class="simple">
+<li><p>Demonstrate how easy it is to write custom CUDA kernels with CuPy</p></li>
+<li><p>Demonstrate the absurd speedups you can get on fractal generation</p></li>
+<li><p>Generate fractals fast enough to make interactive visuals</p></li>
+<li><p>Combine the above with CuPy FFTs to do fractal searches</p></li>
+</ul>
+<section id="hardware">
+<h2>Hardware<a class="headerlink" href="#hardware" title="Permalink to this heading">#</a></h2>
+<p>This notebook and timings were  created on a system with th</p>
+<ul class="simple">
+<li><p><strong>GPU:  NVIDIA GeForce RTX 3090</strong></p></li>
+<li><p><strong>CPU:  AMD Ryzen 3 5800X</strong></p></li>
+</ul>
+</section>
+<section id="summary-of-findings-aggregated-from-running-the-notebook">
+<h2>Summary of findings aggregated from running the notebook.<a class="headerlink" href="#summary-of-findings-aggregated-from-running-the-notebook" title="Permalink to this heading">#</a></h2>
+<hr class="docutils" />
+<p>NOTE: The Python &amp; C++ implementations are dumb &amp; naive.  They could probably be optimized to run faster – but would still never catch up…</p>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Fractal Timings</p></th>
+<th class="head"><p>Frames/Sec</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Python (naive)</p></td>
+<td><p>0.123 FPS</p></td>
+</tr>
+<tr class="row-odd"><td><p>C++ (CPU,naive)</p></td>
+<td><p>9.5 FPS</p></td>
+</tr>
+<tr class="row-even"><td><p>CuPy (xfer off GPU)</p></td>
+<td><p>2,171 FPS</p></td>
+</tr>
+<tr class="row-odd"><td><p>CuPy (stay on GPU)</p></td>
+<td><p>24,389 FPS</p></td>
+</tr>
+</tbody>
+</table>
+<hr class="docutils" />
+<p>In the second half of the notebook, we use FFTs to produce spectrograms to try to find interesting fractals.  It’s worth knowing that CuPy has pretty efficient FFTs as well.</p>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>FFT Timings</p></th>
+<th class="head"><p>Time per FFT (768x768)</p></th>
+<th class="head"><p>Frames/Sec</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>CPU (Numpy) 2D FFT</p></td>
+<td><p>0.00974 sec</p></td>
+<td><p>103 FPS</p></td>
+</tr>
+<tr class="row-odd"><td><p>GPU (CuPy) 2D FFT (xfer to CPU)</p></td>
+<td><p>0.00233 sec</p></td>
+<td><p>429 FPS</p></td>
+</tr>
+<tr class="row-even"><td><p>GPU (CuPy) 2D FFT (stay on GPU)</p></td>
+<td><p>0.00020 sec</p></td>
+<td><p>5,000 FPS</p></td>
+</tr>
+<tr class="row-odd"><td><p>———–</p></td>
+<td><p>———–</p></td>
+<td><p>——</p></td>
+</tr>
+<tr class="row-even"><td><p>GPU Fractal + FFT + Reduce</p></td>
+<td><p>0.00097 sec</p></td>
+<td><p>1,036 FPS</p></td>
+</tr>
+</tbody>
+</table>
+<hr class="docutils" />
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">load_ext</span> autoreload
+<span class="o">%</span><span class="k">autoreload</span> 2
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">time</span>
+<span class="c1"># import cupy as cp</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
+<span class="kn">from</span> <span class="nn">ipywidgets</span> <span class="kn">import</span> <span class="n">interact</span><span class="p">,</span> <span class="n">interactive</span><span class="p">,</span> <span class="n">fixed</span><span class="p">,</span> <span class="n">interact_manual</span>
+<span class="kn">import</span> <span class="nn">ipywidgets</span> <span class="k">as</span> <span class="nn">widgets</span>
+<span class="kn">from</span> <span class="nn">mpl_interactions</span> <span class="kn">import</span> <span class="n">ipyplot</span> <span class="k">as</span> <span class="n">iplt</span>
+<span class="o">%</span><span class="k">matplotlib</span> widget
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output traceback highlight-ipythontb notranslate"><div class="highlight"><pre><span></span><span class="gt">---------------------------------------------------------------------------</span>
+<span class="ne">ModuleNotFoundError</span><span class="g g-Whitespace">                       </span>Traceback (most recent call last)
+<span class="n">Cell</span> <span class="n">In</span><span class="p">[</span><span class="mi">5</span><span class="p">],</span> <span class="n">line</span> <span class="mi">4</span>
+<span class="g g-Whitespace">      </span><span class="mi">2</span> <span class="kn">from</span> <span class="nn">ipywidgets</span> <span class="kn">import</span> <span class="n">interact</span><span class="p">,</span> <span class="n">interactive</span><span class="p">,</span> <span class="n">fixed</span><span class="p">,</span> <span class="n">interact_manual</span>
+<span class="g g-Whitespace">      </span><span class="mi">3</span> <span class="kn">import</span> <span class="nn">ipywidgets</span> <span class="k">as</span> <span class="nn">widgets</span>
+<span class="ne">----&gt; </span><span class="mi">4</span> <span class="kn">from</span> <span class="nn">mpl_interactions</span> <span class="kn">import</span> <span class="n">ipyplot</span> <span class="k">as</span> <span class="n">iplt</span>
+<span class="g g-Whitespace">      </span><span class="mi">5</span> <span class="n">get_ipython</span><span class="p">()</span><span class="o">.</span><span class="n">run_line_magic</span><span class="p">(</span><span class="s1">&#39;matplotlib&#39;</span><span class="p">,</span> <span class="s1">&#39;widget&#39;</span><span class="p">)</span>
+
+<span class="ne">ModuleNotFoundError</span>: No module named &#39;mpl_interactions&#39;
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># A super simple timer class for with-statements, computes per-iteration timing</span>
+<span class="kn">from</span> <span class="nn">simple_timer</span> <span class="kn">import</span> <span class="n">SimpleTimers</span>
+</pre></div>
+</div>
+</div>
+</div>
+<hr class="docutils" />
+</section>
+</section>
+<section id="cupy-sanity-checks">
+<h1>CuPy Sanity Checks<a class="headerlink" href="#cupy-sanity-checks" title="Permalink to this heading">#</a></h1>
+<p>Let’s make sure CuPy was imported properly and finds our GPU.  Run a quick speed test for the lulz.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">test_size</span> <span class="o">=</span> <span class="mi">10000</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cupy_mtrx</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">test_size</span><span class="o">*</span><span class="n">test_size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float32&#39;</span><span class="p">)</span>
+<span class="n">cupy_mtrx</span> <span class="o">=</span> <span class="n">cupy_mtrx</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">test_size</span><span class="p">,</span> <span class="n">test_size</span><span class="p">))</span> <span class="o">/</span> <span class="mf">1024.</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;CuPy Matrix Device:  &#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">cupy_mtrx</span><span class="o">.</span><span class="n">device</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;CuPy Matrix Size:    &#39;</span><span class="p">,</span> <span class="n">cupy_mtrx</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Quick timing test with 4096x4096 matrix multiplication and addition.  Don&#39;t</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">cupy_mtrx</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">cupy_mtrx</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="o">+</span> <span class="mf">1.0</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">*</span> <span class="o">-</span><span class="mf">1.0</span>
+
+<span class="n">n_iter</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;(GPU/CuPy) Timing (</span><span class="si">{</span><span class="n">test_size</span><span class="si">}</span><span class="s1">x</span><span class="si">{</span><span class="n">test_size</span><span class="si">}</span><span class="s1">)&#39;</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="n">SimpleTimers</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s1">&#39;gpu-mtrx-multiply-add&#39;</span><span class="p">,</span> <span class="n">n_iter</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_iter</span><span class="p">):</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">a</span> <span class="o">@</span> <span class="n">b</span> <span class="o">+</span> <span class="n">c</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Okay let&#39;s try it on a CPU, anyway, less iterations</span>
+<span class="n">npa</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<span class="n">npb</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<span class="n">npc</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+
+<span class="n">n_iter</span><span class="o">=</span><span class="mi">5</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;(CPU/Numpy) Timing (</span><span class="si">{</span><span class="n">test_size</span><span class="si">}</span><span class="s1">x</span><span class="si">{</span><span class="n">test_size</span><span class="si">}</span><span class="s1">)&#39;</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="n">SimpleTimers</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s1">&#39;cpu-mtrx-multiply-add&#39;</span><span class="p">,</span> <span class="n">n_iter</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_iter</span><span class="p">):</span>
+        <span class="n">npc</span> <span class="o">=</span> <span class="n">npa</span> <span class="o">@</span> <span class="n">npb</span> <span class="o">+</span> <span class="n">npc</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">gpu_speed</span> <span class="o">=</span> <span class="n">SimpleTimers</span><span class="o">.</span><span class="n">get_iter_per_sec</span><span class="p">(</span><span class="s1">&#39;gpu-mtrx-multiply-add&#39;</span><span class="p">)</span>
+<span class="n">cpu_speed</span> <span class="o">=</span> <span class="n">SimpleTimers</span><span class="o">.</span><span class="n">get_iter_per_sec</span><span class="p">(</span><span class="s1">&#39;cpu-mtrx-multiply-add&#39;</span><span class="p">)</span>
+<span class="n">speed_ratio</span> <span class="o">=</span> <span class="n">gpu_speed</span> <span class="o">/</span> <span class="n">cpu_speed</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;GPU (CuPy) Speedup over CPU (Numpy) for </span><span class="si">{</span><span class="n">test_size</span><span class="si">}</span><span class="s1">x</span><span class="si">{</span><span class="n">test_size</span><span class="si">}</span><span class="s1"> matrices: </span><span class="si">{</span><span class="n">speed_ratio</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1">x&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p><strong>With HUGE matrices, you get very impressive speedups using CuPy/GPU.</strong></p>
+</section>
+<hr class="docutils" />
+<section class="tex2jax_ignore mathjax_ignore" id="cpu-numpy-fractal-generation-speed-test">
+<h1>2. (CPU / Numpy) Fractal Generation Speed Test<a class="headerlink" href="#cpu-numpy-fractal-generation-speed-test" title="Permalink to this heading">#</a></h1>
+<p>Simplest Julia Set computation possible.   All operations <em>look like</em> they could be vectorized, but each point requires a different number of iterations in the escape loop, so it’s not as simple as just cramming together the equivalent NumPy ops from the loop.  Effectively, each point in the complex plane has to be simulated individually (which is highly parallelizable, and great for GPUs).</p>
+<p>This could clearly be optimized and probably get a sizable speedup on CPU, but we’ll see it wouldn’t make much of a difference compared to the GPU/CuPy version.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">SIZE</span><span class="o">=</span><span class="mi">768</span>
+<span class="n">EPS</span><span class="o">=</span><span class="mf">1e-6</span>
+<span class="n">RE</span><span class="p">,</span><span class="n">IM</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span><span class="mi">1</span>  <span class="c1"># indexing into a manual complex value (i.e.  c[RE], c[IM] )</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Use a pre-computed mesh as input, created outside this method so it doesn&#39;t need to</span>
+<span class="c1"># be reallocated &amp; recomputed for each call</span>
+<span class="k">def</span> <span class="nf">cpu_zn2plusc</span><span class="p">(</span><span class="n">np_zmesh_re</span><span class="p">,</span> <span class="n">np_zmesh_im</span><span class="p">,</span> <span class="n">c_real</span><span class="p">,</span> <span class="n">c_imag</span><span class="p">):</span>
+
+    <span class="c1"># Create output image buffer</span>
+    <span class="n">nr</span><span class="p">,</span> <span class="n">nc</span> <span class="o">=</span> <span class="n">np_zmesh_re</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nr</span><span class="p">,</span> <span class="n">nc</span><span class="p">))</span>
+    <span class="n">max_escape_iter</span> <span class="o">=</span> <span class="mi">1000</span>
+    
+    <span class="c1"># Iterate over all pixels, using its point in the complex plane as the starting z-value</span>
+    <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nr</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nc</span><span class="p">):</span>
+    
+            <span class="c1"># The starting z-value for pixel[r,c] is z = a + bi</span>
+            <span class="n">a</span> <span class="o">=</span> <span class="n">np_zmesh_re</span><span class="p">[</span><span class="n">r</span><span class="p">,</span> <span class="n">c</span><span class="p">]</span>
+            <span class="n">b</span> <span class="o">=</span> <span class="n">np_zmesh_im</span><span class="p">[</span><span class="n">r</span><span class="p">,</span> <span class="n">c</span><span class="p">]</span>
+    
+            <span class="n">temp_real</span><span class="p">,</span> <span class="n">temp_imag</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span><span class="mi">0</span>
+    
+            <span class="k">for</span> <span class="nb">iter</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_escape_iter</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">a</span><span class="o">*</span><span class="n">a</span> <span class="o">+</span> <span class="n">b</span><span class="o">*</span><span class="n">b</span> <span class="o">&gt;</span> <span class="mf">4.0</span><span class="p">:</span>
+                    <span class="c1"># Once the squared magnitude is &gt;4.0, it&#39;s never coming back</span>
+                    <span class="k">break</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># (a + bi) * (a + bi) == (a*a - b*b) + (2*a*b)i</span>
+                    <span class="n">temp_real</span> <span class="o">=</span> <span class="n">a</span><span class="o">*</span><span class="n">a</span> <span class="o">-</span> <span class="n">b</span><span class="o">*</span><span class="n">b</span> <span class="o">+</span> <span class="n">c_real</span>
+                    <span class="n">temp_imag</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">a</span><span class="o">*</span><span class="n">b</span> <span class="o">+</span> <span class="n">c_imag</span>
+                    <span class="n">a</span> <span class="o">=</span> <span class="n">temp_real</span>
+                    <span class="n">b</span> <span class="o">=</span> <span class="n">temp_imag</span>
+    
+            <span class="n">out</span><span class="p">[</span><span class="n">r</span><span class="p">,</span> <span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="nb">iter</span><span class="p">))</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">max_escape_iter</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">out</span>
+    
+</pre></div>
+</div>
+</div>
+</div>
+<p>Use <code class="docutils literal notranslate"><span class="pre">np.meshgrid()</span></code> to produce the real and imaginary values for each pixel for which we have to compute the escape time.</p>
+<p>NOTE:  Although Numpy has a complex dtype, CuPy does not.  Thus we will have to break down the problem like this anyway for the GPU implementation.  Using the native complex dtype might give us a mild speedup for the CPU version…</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Constant mesh is the same for all inputs (represent grid in complex plane)</span>
+<span class="n">zmesh_real</span><span class="p">,</span> <span class="n">zmesh_imag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span> 
+    <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="p">(</span><span class="mi">4</span> <span class="o">+</span> <span class="n">EPS</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">SIZE</span> <span class="o">-</span><span class="mi">1</span><span class="p">)),</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="p">(</span><span class="mi">4</span> <span class="o">+</span> <span class="n">EPS</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">SIZE</span> <span class="o">-</span><span class="mi">1</span><span class="p">))[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Let’s take a quick look at the mesh.  Complex numbers are <code class="docutils literal notranslate"><span class="pre">a</span> <span class="pre">+</span> <span class="pre">bi</span></code>.  The left mesh is <code class="docutils literal notranslate"><span class="pre">a</span></code>-values, the right mesh is <code class="docutils literal notranslate"><span class="pre">b</span></code>-values</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span><span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">zmesh_real</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;zmesh_real&#39;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">zmesh_imag</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;zmesh_imag&#39;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+    <span class="n">axs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">SIZE</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">SIZE</span><span class="o">//</span><span class="mi">4</span><span class="p">))</span>
+    <span class="n">axs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="o">+</span><span class="n">EPS</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="n">axs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">SIZE</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">SIZE</span><span class="o">//</span><span class="mi">4</span><span class="p">))</span>
+    <span class="n">axs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_yticklabels</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="o">-</span><span class="n">EPS</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+    <span class="n">axs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Real Axis&#39;</span><span class="p">)</span>
+    <span class="n">axs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Imaginary Axis&#39;</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">(</span><span class="n">pad</span><span class="o">=</span><span class="mf">0.4</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s1">&#39;Real &amp; Imaginary Parts of Complex Plane&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/6186f4d52b29016a1aeba865da92459afad2bc7911fb7299e998d97faafb1bc3.png" src="../_images/6186f4d52b29016a1aeba865da92459afad2bc7911fb7299e998d97faafb1bc3.png" />
+</div>
+</div>
+<p>NOTE:  <code class="docutils literal notranslate"><span class="pre">c</span> <span class="pre">=</span> <span class="pre">-0.8</span> <span class="pre">+</span> <span class="pre">0.156i</span></code> is well-known to produce a visually pleasing fractal for f(z) = z<sup>2</sup> + c</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Quick helper function to rescale axes to complex values.  In this case we use r~real, i~imaginary</span>
+<span class="k">def</span> <span class="nf">relabel_axes</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">nr</span><span class="o">=</span><span class="mi">768</span><span class="p">,</span> <span class="n">rmin</span><span class="o">=-</span><span class="mi">2</span><span class="p">,</span> <span class="n">rmax</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">ni</span><span class="o">=</span><span class="mi">768</span><span class="p">,</span> <span class="n">imin</span><span class="o">=-</span><span class="mi">2</span><span class="p">,</span> <span class="n">imax</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+    <span class="n">r_width</span> <span class="o">=</span> <span class="n">rmax</span> <span class="o">-</span> <span class="n">rmin</span>
+    <span class="n">new_rticks</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nr</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">nr</span><span class="o">//</span><span class="mi">8</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+    <span class="n">new_rticklabels</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">r_width</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">nr</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">rmin</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">new_rticks</span><span class="p">]</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="n">new_rticks</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">(</span><span class="n">new_rticklabels</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Real Axis&#39;</span><span class="p">)</span>
+    
+    <span class="n">i_width</span> <span class="o">=</span> <span class="n">imax</span> <span class="o">-</span> <span class="n">imin</span>
+    <span class="n">new_iticks</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">ni</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">ni</span><span class="o">//</span><span class="mi">8</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+    <span class="n">new_iticklabels</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">i_width</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">ni</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">imin</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">new_iticks</span><span class="p">]</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">(</span><span class="n">new_iticks</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_yticklabels</span><span class="p">(</span><span class="n">new_iticklabels</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Imaginary Axis&#39;</span><span class="p">)</span>
+    
+    
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.156</span>
+<span class="c1"># with SimpleTimers.new(&#39;cpu-fractal&#39;):</span>
+<span class="c1">#     cpu_fractal = cpu_zn2plusc(zmesh_real, zmesh_imag, a, b)</span>
+<span class="c1">#</span>
+
+<span class="n">cpu_fractal</span> <span class="o">=</span> <span class="n">cpu_zn2plusc</span><span class="p">(</span><span class="n">zmesh_real</span><span class="p">,</span> <span class="n">zmesh_imag</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+<span class="n">fig</span><span class="p">,</span><span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="mi">6</span><span class="p">))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">cpu_fractal</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Julia Set for c = </span><span class="si">{</span><span class="n">a</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1"> + </span><span class="si">{</span><span class="n">b</span><span class="si">:</span><span class="s1">.3f</span><span class="si">}</span><span class="s1">i (Numpy: </span><span class="si">{</span><span class="n">SimpleTimers</span><span class="o">.</span><span class="n">get_sec_per_iter</span><span class="p">(</span><span class="s2">&quot;cpu-fractal&quot;</span><span class="p">)</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1"> sec)&#39;</span><span class="p">)</span>
+<span class="n">relabel_axes</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output traceback highlight-ipythontb notranslate"><div class="highlight"><pre><span></span><span class="gt">---------------------------------------------------------------------------</span>
+<span class="ne">NameError</span><span class="g g-Whitespace">                                 </span>Traceback (most recent call last)
+<span class="n">Cell</span> <span class="n">In</span><span class="p">[</span><span class="mi">13</span><span class="p">],</span> <span class="n">line</span> <span class="mi">9</span>
+<span class="g g-Whitespace">      </span><span class="mi">7</span> <span class="n">fig</span><span class="p">,</span><span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="mi">6</span><span class="p">))</span>
+<span class="g g-Whitespace">      </span><span class="mi">8</span> <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">cpu_fractal</span><span class="p">)</span>
+<span class="ne">----&gt; </span><span class="mi">9</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Julia Set for c = </span><span class="si">{</span><span class="n">a</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1"> + </span><span class="si">{</span><span class="n">b</span><span class="si">:</span><span class="s1">.3f</span><span class="si">}</span><span class="s1">i (Numpy: </span><span class="si">{</span><span class="n">SimpleTimers</span><span class="o">.</span><span class="n">get_sec_per_iter</span><span class="p">(</span><span class="s2">&quot;cpu-fractal&quot;</span><span class="p">)</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1"> sec)&#39;</span><span class="p">)</span>
+<span class="g g-Whitespace">     </span><span class="mi">10</span> <span class="n">relabel_axes</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span>
+
+<span class="ne">NameError</span>: name &#39;SimpleTimers&#39; is not defined
+</pre></div>
+</div>
+<img alt="../_images/f51f850443897e6cad8827923b07cbd50dbc34d89b0ca8c2b4858de1c51dcaba.png" src="../_images/f51f850443897e6cad8827923b07cbd50dbc34d89b0ca8c2b4858de1c51dcaba.png" />
+</div>
+</div>
+</section>
+<section class="tex2jax_ignore mathjax_ignore" id="gpu-implementation">
+<h1>3. GPU Implementation<a class="headerlink" href="#gpu-implementation" title="Permalink to this heading">#</a></h1>
+<p><strong>Notice the switch from <code class="docutils literal notranslate"><span class="pre">np</span></code> methods to nearly identical <code class="docutils literal notranslate"><span class="pre">cp</span></code> methods</strong></p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create a GPU/CuPy grid of complex values (`cp.*` instead of `np.*`)</span>
+<span class="n">zmesh_re</span><span class="p">,</span> <span class="n">zmesh_im</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span> 
+    <span class="n">cp</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="p">(</span><span class="mi">4</span> <span class="o">+</span> <span class="n">EPS</span><span class="p">)</span> <span class="o">/</span> <span class="n">SIZE</span><span class="p">),</span>
+    <span class="n">cp</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="p">(</span><span class="mi">4</span> <span class="o">+</span> <span class="n">EPS</span><span class="p">)</span> <span class="o">/</span> <span class="n">SIZE</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+</div>
+<section id="define-the-cuda-kernel-using-cupy-elementwisekernel">
+<h2>Define the CUDA Kernel using CuPy <code class="docutils literal notranslate"><span class="pre">ElementwiseKernel</span></code><a class="headerlink" href="#define-the-cuda-kernel-using-cupy-elementwisekernel" title="Permalink to this heading">#</a></h2>
+<p>Everytime we run the following cell, we are generating C++ code that has to be compiled into a CUDA kernel and then uploaded to the GPU.  If we were to create a loop or interactive method with this code inline, we’re going to take a devastating performance hit, since it will have to recompile and upload the code for every fractal generation.</p>
+<p>So the strategy is to create the <code class="docutils literal notranslate"><span class="pre">cp.ElementwiseKernel</span></code> one time, which compiles and pushes the code to the GPU to be invoked by downstream code repeatedly.  The meshes supplied as the first two arguments were already created on the GPU (in the previous cell), so under the hood it’s only passing the existing pointers to GPU memory for those inputs, not copying the data.  The other two arguments are the single complex <code class="docutils literal notranslate"><span class="pre">c</span></code>-value that define the fractal we want to generate.  Therefore, when we invoke this method the only thing being sent to the GPU is a couple of GPU memory pointers and two float32 values.  It doesn’t get any more efficient &amp; optimized than that.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define the C++ code to be compiled into the CUDA grid/block kernel</span>
+<span class="n">gpu_escape_time_zn_plus_c</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">ElementwiseKernel</span><span class="p">(</span>
+    <span class="s1">&#39;float32 z_mesh_re, float32 z_mesh_im, float32 cReal, float32 cImag&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;float32 out&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        int time;</span>
+
+<span class="sd">        float tempReal = 0.0;</span>
+<span class="sd">        float tempImag = 0.0;</span>
+
+<span class="sd">        float znReal = z_mesh_re;</span>
+<span class="sd">        float znImag = z_mesh_im;</span>
+
+<span class="sd">        for(time=1; time&lt;1000; time++)</span>
+<span class="sd">        {</span>
+<span class="sd">            if(znReal*znReal + znImag*znImag &gt; 4.0)</span>
+<span class="sd">                break; </span>
+<span class="sd">            else</span>
+<span class="sd">            {</span>
+<span class="sd">                tempReal = znReal*znReal - znImag*znImag + cReal;</span>
+<span class="sd">                tempImag = 2*znReal*znImag + cImag;</span>
+<span class="sd">        </span>
+<span class="sd">                znReal = tempReal;</span>
+<span class="sd">                znImag = tempImag;</span>
+<span class="sd">            }</span>
+<span class="sd">        }</span>
+<span class="sd">    </span>
+<span class="sd">        out = log2f((float)time) / log2f(1000.0f);</span>
+<span class="sd">    &#39;&#39;&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;gpu_znplusc&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create the mesh inputs directly on the GPU with cp.meshgrid(...)</span>
+<span class="n">zmesh_re</span><span class="p">,</span> <span class="n">zmesh_im</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">cp</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="o">+</span><span class="n">EPS</span><span class="p">,</span> <span class="mf">4.0</span><span class="o">/</span><span class="p">(</span><span class="n">SIZE</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">cp</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+                                 <span class="n">cp</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="o">+</span><span class="n">EPS</span><span class="p">,</span> <span class="mf">4.0</span><span class="o">/</span><span class="p">(</span><span class="n">SIZE</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">cp</span><span class="o">.</span><span class="n">float32</span><span class="p">))</span>
+
+<span class="c1"># A quick test to confirm it runs and produces the output shape we expected</span>
+<span class="n">out</span> <span class="o">=</span> <span class="n">gpu_escape_time_zn_plus_c</span><span class="p">(</span><span class="n">zmesh_re</span><span class="p">,</span> <span class="n">zmesh_im</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.156</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Test run output shape:&#39;</span><span class="p">,</span> <span class="n">out</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Show some samples</span>
+<span class="n">c_vals</span> <span class="o">=</span> <span class="p">[(</span><span class="o">-</span><span class="mf">0.8</span><span class="p">,</span>   <span class="mf">0.156</span><span class="p">),</span>
+          <span class="p">(</span><span class="o">-</span><span class="mf">0.2</span><span class="p">,</span>  <span class="o">-</span><span class="mf">0.4</span><span class="p">),</span>
+          <span class="p">(</span><span class="o">-</span><span class="mf">0.4</span><span class="p">,</span>   <span class="mf">0.6</span><span class="p">),</span>
+          <span class="p">(</span> <span class="mf">0.4</span><span class="p">,</span>  <span class="o">-</span><span class="mf">0.1</span><span class="p">)]</span>
+          
+<span class="n">fig</span><span class="p">,</span><span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span><span class="mi">8</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">c_vals</span><span class="p">):</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">gpu_escape_time_zn_plus_c</span><span class="p">(</span><span class="n">zmesh_re</span><span class="p">,</span> <span class="n">zmesh_im</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+    <span class="n">axs</span><span class="p">[</span><span class="n">i</span><span class="o">//</span><span class="mi">2</span><span class="p">][</span><span class="n">i</span><span class="o">%</span><span class="k">2</span>].imshow(out.get())
+    <span class="n">axs</span><span class="p">[</span><span class="n">i</span><span class="o">//</span><span class="mi">2</span><span class="p">][</span><span class="n">i</span><span class="o">%</span><span class="k">2</span>].set_title(f&#39;c-value = {a:.2f} + {b:.2f}i&#39;)
+    <span class="n">axs</span><span class="p">[</span><span class="n">i</span><span class="o">//</span><span class="mi">2</span><span class="p">][</span><span class="n">i</span><span class="o">%</span><span class="k">2</span>].axis(&#39;off&#39;)
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">c_vals</span> <span class="o">=</span> <span class="p">[(</span><span class="o">-</span><span class="mf">0.8</span><span class="p">,</span>   <span class="mf">0.156</span><span class="p">),</span>
+          <span class="p">(</span><span class="o">-</span><span class="mf">0.2</span><span class="p">,</span>  <span class="o">-</span><span class="mf">0.4</span><span class="p">),</span>
+          <span class="p">(</span><span class="o">-</span><span class="mf">0.4</span><span class="p">,</span>   <span class="mf">0.6</span><span class="p">),</span>
+          <span class="p">(</span> <span class="mf">0.4</span><span class="p">,</span>  <span class="o">-</span><span class="mf">0.1</span><span class="p">)]</span>
+          
+
+<span class="n">fig</span><span class="p">,</span><span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">re</span><span class="p">,</span> <span class="n">im</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">c_vals</span><span class="p">):</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">gpu_escape_time_zn_plus_c</span><span class="p">(</span><span class="n">zmesh_re</span><span class="p">,</span> <span class="n">zmesh_im</span><span class="p">,</span> <span class="n">re</span><span class="p">,</span> <span class="n">im</span><span class="p">)</span>
+    <span class="n">axs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>
+    <span class="n">axs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;c-value = </span><span class="si">{</span><span class="n">re</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1"> + </span><span class="si">{</span><span class="n">im</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1">i&#39;</span><span class="p">)</span>
+    <span class="n">axs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="gpu-timing-tests">
+<h2>GPU Timing Tests<a class="headerlink" href="#gpu-timing-tests" title="Permalink to this heading">#</a></h2>
+<p>The following timing computes thousands of fractals with different <code class="docutils literal notranslate"><span class="pre">c</span></code>-values, but it leaves the data on the GPU.  This will emphasize the raw computation speed of the GPU, even though some applications would have to transfer the result from the GPU back to the host/CPU.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># GPU timing test params</span>
+<span class="n">LIM</span> <span class="o">=</span> <span class="mf">1.0</span>
+<span class="n">GRID</span> <span class="o">=</span> <span class="mi">128</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># This is solely for timing raw fractal computation (does not leave GPU)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;GPU Timing:  </span><span class="si">{</span><span class="n">SIZE</span><span class="si">}</span><span class="s1">x</span><span class="si">{</span><span class="n">SIZE</span><span class="si">}</span><span class="s1"> fractals; no xfer to CPU&#39;</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">SimpleTimers</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s1">&#39;gpu-fractal-no-xfer&#39;</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=</span><span class="n">GRID</span><span class="o">*</span><span class="n">GRID</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">j</span><span class="p">,</span><span class="n">c_re</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">LIM</span><span class="p">,</span> <span class="n">LIM</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">LIM</span> <span class="o">+</span> <span class="n">EPS</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">GRID</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))):</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">c_im</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">LIM</span><span class="p">,</span> <span class="n">LIM</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">LIM</span> <span class="o">+</span> <span class="n">EPS</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">GRID</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))):</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="n">gpu_escape_time_zn_plus_c</span><span class="p">(</span><span class="n">zmesh_re</span><span class="p">,</span> <span class="n">zmesh_im</span><span class="p">,</span> <span class="n">c_re</span><span class="p">,</span> <span class="n">c_im</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>For comparison, this is the same computation but with <code class="docutils literal notranslate"><span class="pre">.get()</span></code> on each result, which transfers the data back to the host/CPU.  We should see a dramatic performance hit, though it will still be way faster than the CPU version</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;GPU Timing:  </span><span class="si">{</span><span class="n">SIZE</span><span class="si">}</span><span class="s1">x</span><span class="si">{</span><span class="n">SIZE</span><span class="si">}</span><span class="s1"> fractals; with overhead of xfer to CPU after each (no batching)&#39;</span><span class="p">)</span>
+
+<span class="n">host_var</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="k">with</span> <span class="n">SimpleTimers</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s1">&#39;gpu-fractal-xfer-to-host&#39;</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=</span><span class="n">GRID</span><span class="o">*</span><span class="n">GRID</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">j</span><span class="p">,</span><span class="n">c_re</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">LIM</span><span class="p">,</span> <span class="n">LIM</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">LIM</span> <span class="o">+</span> <span class="n">EPS</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">GRID</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))):</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">c_im</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">LIM</span><span class="p">,</span> <span class="n">LIM</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">LIM</span> <span class="o">+</span> <span class="n">EPS</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">GRID</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))):</span>
+            <span class="n">host_var</span> <span class="o">=</span> <span class="n">gpu_escape_time_zn_plus_c</span><span class="p">(</span><span class="n">zmesh_re</span><span class="p">,</span> <span class="n">zmesh_im</span><span class="p">,</span> <span class="n">c_re</span><span class="p">,</span> <span class="n">c_im</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+
+<span class="n">host_var</span> <span class="o">=</span> <span class="kc">None</span>
+</pre></div>
+</div>
+</div>
+</div>
+<section id="speed-summary">
+<h3>Speed Summary<a class="headerlink" href="#speed-summary" title="Permalink to this heading">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">display_table</span> <span class="o">=</span> <span class="p">[</span> \
+    <span class="p">[</span><span class="s1">&#39;CPU / Numpy&#39;</span><span class="p">,</span> <span class="n">SimpleTimers</span><span class="o">.</span><span class="n">get_iter_per_sec</span><span class="p">(</span><span class="s1">&#39;cpu-fractal&#39;</span><span class="p">)],</span>
+    <span class="p">[</span><span class="s1">&#39;CPU / C++&#39;</span><span class="p">,</span> <span class="mf">10.1</span><span class="p">],</span>  <span class="c1"># from a naive C++ implementation on 768x768 fractals</span>
+    <span class="p">[</span><span class="s1">&#39;GPU / CuPy (xfer to host)&#39;</span><span class="p">,</span> <span class="n">SimpleTimers</span><span class="o">.</span><span class="n">get_iter_per_sec</span><span class="p">(</span><span class="s1">&#39;gpu-fractal-xfer-to-host&#39;</span><span class="p">)],</span>
+    <span class="p">[</span><span class="s1">&#39;GPU / CuPy (stay on GPU)&#39;</span><span class="p">,</span> <span class="n">SimpleTimers</span><span class="o">.</span><span class="n">get_iter_per_sec</span><span class="p">(</span><span class="s1">&#39;gpu-fractal-no-xfer&#39;</span><span class="p">)],</span>
+<span class="p">]</span>
+
+<span class="k">for</span> <span class="n">txt</span><span class="p">,</span><span class="n">fps</span> <span class="ow">in</span> <span class="n">display_table</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">((</span><span class="n">txt</span><span class="o">+</span><span class="s1">&#39;:&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">30</span><span class="p">),</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">fps</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span> <span class="s1">&#39;frames/sec&#39;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Note: C++ timing was based on a naive C++ implementation not shown here&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+</section>
+<hr class="docutils" />
+<section class="tex2jax_ignore mathjax_ignore" id="interactive-fractals">
+<h1>4. Interactive Fractals!<a class="headerlink" href="#interactive-fractals" title="Permalink to this heading">#</a></h1>
+<p>We see that each (complex) value of <code class="docutils literal notranslate"><span class="pre">c</span></code> in <code class="docutils literal notranslate"><span class="pre">f(z)</span> <span class="pre">=</span> <span class="pre">z^2</span> <span class="pre">+</span> <span class="pre">c</span></code> produces a different fractal:</p>
+<p><img alt="" src="https://areiner-image-share.s3.amazonaws.com/julia_set_search.png" /></p>
+<p>Since we can generate fractals so quickly, let’s make an interactive fractal viewer!</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># This really has to be defined inline in the notebook to work with mpl-interactions</span>
+<span class="k">class</span> <span class="nc">FractalExplorer</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kernel</span><span class="p">,</span> <span class="n">figure</span><span class="p">,</span> <span class="n">im</span><span class="p">,</span> <span class="n">txt</span><span class="p">,</span> <span class="n">clim</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">img_size</span><span class="o">=</span><span class="n">SIZE</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_pressed</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clim</span> <span class="o">=</span> <span class="n">clim</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span> <span class="o">=</span> <span class="n">kernel</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">img_size</span> <span class="o">=</span> <span class="n">img_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">figure</span> <span class="o">=</span> <span class="n">figure</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">im</span> <span class="o">=</span> <span class="n">im</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">txt</span> <span class="o">=</span> <span class="n">txt</span>
+
+    <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cidpress</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">mpl_connect</span><span class="p">(</span><span class="s1">&#39;button_press_event&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_press</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cidrelease</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">mpl_connect</span><span class="p">(</span><span class="s1">&#39;button_release_event&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_release</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cidmotion</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">mpl_connect</span><span class="p">(</span><span class="s1">&#39;motion_notify_event&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_motion</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">on_press</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_pressed</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">on_motion</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">on_motion</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_pressed</span><span class="p">:</span>
+            <span class="k">return</span>
+        
+        <span class="n">c_re</span> <span class="o">=</span> <span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">xdata</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">img_size</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">clim</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">clim</span>
+        <span class="n">c_im</span> <span class="o">=</span> <span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">ydata</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">img_size</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">clim</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">clim</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">txt</span><span class="o">.</span><span class="n">set_text</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;c = </span><span class="si">{</span><span class="n">c_re</span><span class="si">:</span><span class="s1">.3f</span><span class="si">}</span><span class="s1"> + </span><span class="si">{</span><span class="o">-</span><span class="n">c_im</span><span class="si">:</span><span class="s1">.3f</span><span class="si">}</span><span class="s1">i&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">im</span><span class="o">.</span><span class="n">set_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="p">(</span><span class="n">zmesh_re</span><span class="p">,</span> <span class="n">zmesh_im</span><span class="p">,</span> <span class="n">c_re</span><span class="p">,</span> <span class="o">-</span><span class="n">c_im</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">im</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">on_release</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_pressed</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="nf">disconnect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">mpl_disconnect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cidpress</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">mpl_disconnect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cidrelease</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">mpl_disconnect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cidmotion</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">figure</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">im</span> <span class="o">=</span> <span class="kc">None</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span><span class="mi">8</span><span class="p">))</span>
+<span class="n">im</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">gpu_escape_time_zn_plus_c</span><span class="p">(</span><span class="n">zmesh_re</span><span class="p">,</span> <span class="n">zmesh_im</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.156</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>
+<span class="n">txt</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="s1">&#39;c = -0.800 + 0.156i&#39;</span><span class="p">)</span>
+<span class="n">relabel_axes</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span>
+<span class="n">fs</span> <span class="o">=</span> <span class="n">FractalExplorer</span><span class="p">(</span><span class="n">gpu_escape_time_zn_plus_c</span><span class="p">,</span> <span class="n">fig</span><span class="p">,</span> <span class="n">im</span><span class="p">,</span> <span class="n">txt</span><span class="p">,</span> <span class="n">clim</span><span class="o">=</span><span class="mf">1.2</span><span class="p">)</span>
+<span class="n">fs</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>For reference, here’s a few common <code class="docutils literal notranslate"><span class="pre">c</span></code>-values that produce visually-pleasing Julia Set fractals that you can try to mouse to, above:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="n">c_real</span><span class="p">,</span> <span class="n">c_imag</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.16</span><span class="p">)</span>
+<span class="p">(</span><span class="n">c_real</span><span class="p">,</span> <span class="n">c_imag</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">0.76</span><span class="p">,</span> <span class="mf">0.10</span><span class="p">)</span>
+<span class="p">(</span><span class="n">c_real</span><span class="p">,</span> <span class="n">c_imag</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.60</span><span class="p">)</span>
+<span class="p">(</span><span class="n">c_real</span><span class="p">,</span> <span class="n">c_imag</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.32</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">)</span>
+</pre></div>
+</div>
+<section id="create-a-desktop-wallpaper-of-your-fractal">
+<h2>Create a desktop wallpaper of your fractal!<a class="headerlink" href="#create-a-desktop-wallpaper-of-your-fractal" title="Permalink to this heading">#</a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create a desktop wallpaper</span>
+<span class="n">size</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2540</span><span class="p">,</span> <span class="mi">1440</span><span class="p">)</span>
+<span class="n">colormap_name</span> <span class="o">=</span> <span class="s1">&#39;hot&#39;</span>
+
+<span class="c1"># Need to update our mesh creation to create custom, non-square fractals</span>
+<span class="n">step</span> <span class="o">=</span> <span class="mf">4.0</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="n">size</span><span class="p">)</span> 
+<span class="n">lims</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span><span class="o">*</span><span class="n">step</span><span class="o">/</span><span class="mf">2.0</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">size</span><span class="p">]</span>
+<span class="n">mesh_wp_re</span><span class="p">,</span> <span class="n">mesh_wp_im</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">cp</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">lims</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">lims</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="n">EPS</span><span class="p">,</span> <span class="n">step</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">cp</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+                                     <span class="n">cp</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">lims</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">lims</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="n">EPS</span><span class="p">,</span> <span class="n">step</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">cp</span><span class="o">.</span><span class="n">float32</span><span class="p">))</span>
+
+<span class="c1"># Get the last-chosen c-value from the text box (I had trouble doing this in more elegant ways ... ?)</span>
+<span class="n">txt_parts</span> <span class="o">=</span> <span class="n">txt</span><span class="o">.</span><span class="n">get_text</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
+<span class="n">c_re</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">txt_parts</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+<span class="n">c_im</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">txt_parts</span><span class="p">[</span><span class="mi">4</span><span class="p">][:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Value from mouse selection above: </span><span class="si">{</span><span class="n">c_re</span><span class="si">:</span><span class="s1">.3f</span><span class="si">}</span><span class="s1"> + </span><span class="si">{</span><span class="n">c_im</span><span class="si">:</span><span class="s1">.3f</span><span class="si">}</span><span class="s1">i&#39;</span><span class="p">)</span>
+
+<span class="n">fractal</span> <span class="o">=</span> <span class="n">gpu_escape_time_zn_plus_c</span><span class="p">(</span><span class="n">mesh_wp_re</span><span class="p">,</span> <span class="n">mesh_wp_im</span><span class="p">,</span> <span class="n">c_re</span><span class="p">,</span> <span class="n">c_im</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<span class="n">norm</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">Normalize</span><span class="p">(</span><span class="n">vmin</span><span class="o">=</span><span class="n">fractal</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">vmax</span><span class="o">=</span><span class="n">fractal</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+<span class="n">image</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="n">colormap_name</span><span class="p">)(</span><span class="n">norm</span><span class="p">(</span><span class="n">fractal</span><span class="p">))</span>
+<span class="n">fig</span><span class="p">,</span><span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span> <span class="o">*</span> <span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+<span class="n">save_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;wallpaper_fractal_</span><span class="si">{</span><span class="n">c_re</span><span class="si">:</span><span class="s1">.3f</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">c_im</span><span class="si">:</span><span class="s1">.3f</span><span class="si">}</span><span class="s1">.png&#39;</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Your Fractal Wallpaper is Ready!  </span><span class="si">{</span><span class="n">save_file</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<span class="c1"># Truncate the image if it&#39;s slightly larger than intended</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">imsave</span><span class="p">(</span><span class="n">save_file</span><span class="p">,</span> <span class="n">image</span><span class="p">[:</span><span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">:</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">:])</span>
+</pre></div>
+</div>
+</div>
+</div>
+<hr class="docutils" />
+</section>
+<hr class="docutils" />
+<section id="gpu-fractal-search">
+<h2>5. GPU Fractal Search!<a class="headerlink" href="#gpu-fractal-search" title="Permalink to this heading">#</a></h2>
+<p>Let’s take this a step further: rather than manually searching for good fractals using the mouse and our eyeballs, let’s define a scoring function that is correlated with “good” fractals and search through all possible points that we would otherwise search with our mouse.</p>
+<p>My hypothesis is that the “good” fractals have the more high-frequency components than the “bad” fractals.  So we can create a scoring function based on using CuPy’s GPU-accelerated <a class="reference external" href="https://en.wikipedia.org/wiki/Fast_Fourier_transform">Fast Fourier Transform (FFT)</a>.  High density at the edges of the spectrogram indicate large frequency componenets.</p>
+<p>The beauty of this solution is that we can apply the FFT to the generated fractal and then compute its score, without any data leaving the GPU.</p>
+<section id="simple-data-pipeline-through-the-gpu">
+<h3>Simple data pipeline through the GPU<a class="headerlink" href="#simple-data-pipeline-through-the-gpu" title="Permalink to this heading">#</a></h3>
+<p>For each fractal (<code class="docutils literal notranslate"><span class="pre">c</span></code>-value), only a tiny amount of data is uploaded to the GPU to kick off the computation, then only the <code class="docutils literal notranslate"><span class="pre">float32</span></code> score is returned.</p>
+<img src="https://areiner-fractal-resources.s3.amazonaws.com/fractal_cpu_gpu_diagram.png" width="800">
+<p>(Note: the diagram is an oversimplification, but it accurately portrays the high efficiency of the pipeline)</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Just testing that FFT works and what it looks like (CPU/Numpy)</span>
+<span class="n">fft_domain</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fftshift</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fft2</span><span class="p">(</span><span class="n">cpu_fractal</span><span class="p">))</span>
+<span class="n">fig</span><span class="p">,</span><span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">fft_domain</span><span class="p">)))</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;log-FFT of a &quot;Good&quot; Fractal&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">SIZE</span> <span class="o">=</span> <span class="mi">768</span>
+<span class="n">zmesh_re</span><span class="p">,</span> <span class="n">zmesh_im</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">cp</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="o">+</span><span class="n">EPS</span><span class="p">,</span> <span class="mf">4.0</span><span class="o">/</span><span class="p">(</span><span class="n">SIZE</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">cp</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+                                 <span class="n">cp</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="o">+</span><span class="n">EPS</span><span class="p">,</span> <span class="mf">4.0</span><span class="o">/</span><span class="p">(</span><span class="n">SIZE</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">cp</span><span class="o">.</span><span class="n">float32</span><span class="p">))</span>
+
+<span class="c1"># The above meshgrid is actually resuable to compute a absolute-value-based score mask</span>
+<span class="n">score_mask</span> <span class="o">=</span> <span class="n">zmesh_re</span><span class="o">*</span><span class="n">zmesh_re</span> <span class="o">+</span> <span class="n">zmesh_im</span><span class="o">*</span><span class="n">zmesh_im</span>
+
+<span class="c1"># &quot;kernel&quot; is the CuPy complex function -- we make it an input so we can repeat this for another</span>
+<span class="c1"># fractal type, later.</span>
+<span class="k">def</span> <span class="nf">evaluate_fractal</span><span class="p">(</span><span class="n">kernel</span><span class="p">,</span> <span class="n">zmesh_real</span><span class="p">,</span> <span class="n">zmesh_imag</span><span class="p">,</span> <span class="n">c_real</span><span class="p">,</span> <span class="n">c_imag</span><span class="p">,</span> <span class="n">score_mask</span><span class="p">):</span>
+    <span class="n">fractal</span> <span class="o">=</span> <span class="n">kernel</span><span class="p">(</span><span class="n">zmesh_real</span><span class="p">,</span> <span class="n">zmesh_imag</span><span class="p">,</span> <span class="n">c_real</span><span class="p">,</span> <span class="n">c_imag</span><span class="p">)</span>
+    <span class="n">spectral</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">cp</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fftshift</span><span class="p">(</span><span class="n">cp</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fft2</span><span class="p">(</span><span class="n">fractal</span><span class="p">)))</span>
+    <span class="n">score</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">cp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">score_mask</span> <span class="o">*</span> <span class="n">spectral</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">score</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">good_fractal</span> <span class="o">=</span> <span class="n">gpu_escape_time_zn_plus_c</span><span class="p">(</span><span class="n">zmesh_re</span><span class="p">,</span> <span class="n">zmesh_im</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.156</span><span class="p">)</span>
+<span class="n">bad_fractal</span> <span class="o">=</span> <span class="n">gpu_escape_time_zn_plus_c</span><span class="p">(</span><span class="n">zmesh_re</span><span class="p">,</span> <span class="n">zmesh_im</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.2</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.4</span><span class="p">)</span>
+
+<span class="n">good_log_fft</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">cp</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">cp</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fftshift</span><span class="p">(</span><span class="n">cp</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fft2</span><span class="p">(</span><span class="n">good_fractal</span><span class="p">))))</span>
+<span class="n">bad_log_fft</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">cp</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">cp</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fftshift</span><span class="p">(</span><span class="n">cp</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fft2</span><span class="p">(</span><span class="n">bad_fractal</span><span class="p">))))</span>
+
+<span class="n">good_score</span> <span class="o">=</span> <span class="n">evaluate_fractal</span><span class="p">(</span><span class="n">gpu_escape_time_zn_plus_c</span><span class="p">,</span> <span class="n">zmesh_re</span><span class="p">,</span> <span class="n">zmesh_im</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.156</span><span class="p">,</span> <span class="n">score_mask</span><span class="p">)</span>
+<span class="n">bad_score</span> <span class="o">=</span> <span class="n">evaluate_fractal</span><span class="p">(</span><span class="n">gpu_escape_time_zn_plus_c</span><span class="p">,</span> <span class="n">zmesh_re</span><span class="p">,</span> <span class="n">zmesh_im</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.2</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.4</span><span class="p">,</span> <span class="n">score_mask</span><span class="p">)</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span><span class="mi">8</span><span class="p">))</span>
+
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">good_fractal</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Good fractal: -0.8 + 0.156i&#39;</span><span class="p">)</span>
+
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">bad_fractal</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;&quot;Bad&quot; fractal: -0.2 + -0.4i&#39;</span><span class="p">)</span>
+
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">good_log_fft</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Good FFT, score=</span><span class="si">{</span><span class="n">good_score</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">bad_log_fft</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Bad FFT, score=</span><span class="si">{</span><span class="n">bad_score</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+    <span class="n">axs</span><span class="p">[</span><span class="n">i</span><span class="o">//</span><span class="mi">2</span><span class="p">][</span><span class="n">i</span><span class="o">%</span><span class="k">2</span>].axis(&#39;off&#39;)
+</pre></div>
+</div>
+</div>
+</div>
+<p>In absoute terms, it looks like all fractals have a lot of high-frequency components.  But there is a visual difference between them.  And we’ll see that it’s enough to produce interesting results.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">LIM</span> <span class="o">=</span> <span class="mf">1.6</span>
+<span class="n">GRID</span> <span class="o">=</span> <span class="mi">256</span>
+<span class="n">STEP</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">LIM</span> <span class="o">+</span> <span class="n">EPS</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">GRID</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">c_map</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">GRID</span><span class="p">,</span> <span class="n">GRID</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float&#39;</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="n">SimpleTimers</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s1">&#39;gpu-fractal-fft-score&#39;</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=</span><span class="n">GRID</span><span class="o">*</span><span class="n">GRID</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">j</span><span class="p">,</span><span class="n">c_re</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">LIM</span><span class="p">,</span> <span class="n">LIM</span><span class="p">,</span> <span class="n">STEP</span><span class="p">)):</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">c_im</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">LIM</span><span class="p">,</span> <span class="n">LIM</span><span class="p">,</span> <span class="n">STEP</span><span class="p">)):</span>
+            <span class="n">c_map</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">evaluate_fractal</span><span class="p">(</span><span class="n">gpu_escape_time_zn_plus_c</span><span class="p">,</span> <span class="n">zmesh_re</span><span class="p">,</span> <span class="n">zmesh_im</span><span class="p">,</span> <span class="n">c_re</span><span class="p">,</span> <span class="n">c_im</span><span class="p">,</span> <span class="n">score_mask</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span><span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="mi">6</span><span class="p">))</span>
+<span class="n">disp_good_c_map</span> <span class="o">=</span> <span class="n">c_map</span><span class="p">[</span><span class="mi">2</span><span class="p">:</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">disp_good_c_map</span><span class="p">)</span>
+
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;FFT-based Score for each c-value&#39;</span><span class="p">)</span>
+<span class="n">relabel_axes</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">nr</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span> <span class="n">ni</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span> <span class="n">rmin</span><span class="o">=-</span><span class="mf">1.6</span><span class="p">,</span> <span class="n">rmax</span><span class="o">=</span><span class="mf">1.6</span><span class="p">,</span> <span class="n">imin</span><span class="o">=-</span><span class="mf">1.6</span><span class="p">,</span> <span class="n">imax</span><span class="o">=</span><span class="mf">1.6</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="the-good-fractal-map-is-a-fractal">
+<h2>The Good-Fractal Map is … a fractal ?!<a class="headerlink" href="#the-good-fractal-map-is-a-fractal" title="Permalink to this heading">#</a></h2>
+<p>It turns out that the map of <code class="docutils literal notranslate"><span class="pre">c</span></code>-values that produce high quality fractals is another fratal!  Specifically, it’s the Mandelbrot set.  Here’s a high-res version from wikipedia.</p>
+<p><img alt="" src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/Mandel_zoom_00_mandelbrot_set.jpg/322px-Mandel_zoom_00_mandelbrot_set.jpg" /></p>
+<p>(Source: From Wikipedia)</p>
+<p>Might as well check the fractal at the point with the most high-frequency…</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;C-value map:&#39;</span><span class="p">,</span> <span class="n">c_map</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="n">lin_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">c_map</span><span class="p">)</span>
+<span class="n">j</span><span class="p">,</span> <span class="n">i</span> <span class="o">=</span> <span class="n">lin_max</span> <span class="o">//</span> <span class="n">GRID</span><span class="p">,</span> <span class="n">lin_max</span> <span class="o">%</span> <span class="n">GRID</span>
+<span class="n">highest_freq_fractal</span> <span class="o">=</span> <span class="n">gpu_escape_time_zn_plus_c</span><span class="p">(</span><span class="n">zmesh_re</span><span class="p">,</span> <span class="n">zmesh_im</span><span class="p">,</span> <span class="o">-</span><span class="n">LIM</span><span class="o">+</span><span class="n">i</span><span class="o">*</span><span class="n">STEP</span><span class="p">,</span> <span class="o">-</span><span class="n">LIM</span><span class="o">+</span><span class="n">j</span><span class="o">*</span><span class="n">STEP</span><span class="p">)</span>
+<span class="n">fig</span><span class="p">,</span><span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span><span class="mi">8</span><span class="p">))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">highest_freq_fractal</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Julia Set with Most High-Frequency Components&#39;</span><span class="p">)</span>
+<span class="n">relabel_axes</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<hr class="docutils" />
+<section id="cubic-fractal">
+<h2>Cubic Fractal<a class="headerlink" href="#cubic-fractal" title="Permalink to this heading">#</a></h2>
+<p>Another common fractal is f(z) = z<sup>3</sup> + c</p>
+<p>We should be able to define it the same way and repeat the search.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">max_iter_escape</span> <span class="o">=</span> <span class="mi">1000</span>
+<span class="n">gpu_escape_time_zn3plusc</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">ElementwiseKernel</span><span class="p">(</span>
+        <span class="s1">&#39;float32 mesh_re, float32 mesh_im, float32 cReal, float32 cImag&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;float32 out&#39;</span><span class="p">,</span>
+        <span class="sa">f</span><span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">            int time = 0;</span>
+
+<span class="s1">            float tempReal = 0.0;</span>
+<span class="s1">            float tempImag = 0.0;</span>
+
+<span class="s1">            float a = mesh_re;</span>
+<span class="s1">            float b = mesh_im;</span>
+<span class="s1">            float magnitude = 0.0;</span>
+
+<span class="s1">            for(time=1; time&lt;</span><span class="si">{</span><span class="n">max_iter_escape</span><span class="si">}</span><span class="s1">; time++)</span>
+<span class="s1">            </span><span class="se">{{</span>
+<span class="s1">                magnitude = a*a + b*b;</span>
+<span class="s1">                if(magnitude &lt; 4.0)</span>
+<span class="s1">                </span><span class="se">{{</span>
+<span class="s1">                    tempReal = a*a*a - 3*a*b*b + cReal;</span>
+<span class="s1">                    tempImag = 3*a*a*b - b*b*b + cImag;</span>
+<span class="s1">            </span>
+<span class="s1">                    a = tempReal;</span>
+<span class="s1">                    b = tempImag;</span>
+<span class="s1">                </span><span class="se">}}</span>
+<span class="s1">                else</span>
+<span class="s1">                    break;</span>
+<span class="s1">            </span><span class="se">}}</span>
+<span class="s1">        </span>
+<span class="s1">            out = log2f((float)time) / log2f((float)</span><span class="si">{</span><span class="n">max_iter_escape</span><span class="si">}</span><span class="s1">);</span>
+<span class="s1">        &#39;&#39;&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;escape_time_zn3minus1&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Equation: z<sup>3</sup> + c</p>
+<p>Some good looking values:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">c</span> <span class="o">==</span>  <span class="mf">0.470</span> <span class="o">-</span> <span class="mf">0.580</span><span class="n">i</span>
+<span class="n">c</span> <span class="o">==</span> <span class="o">-</span><span class="mf">0.560</span> <span class="o">+</span> <span class="mf">0.230</span><span class="n">i</span>
+<span class="n">c</span> <span class="o">==</span> <span class="o">-</span><span class="mf">0.550</span> <span class="o">+</span> <span class="mf">0.292</span><span class="n">i</span>
+<span class="n">c</span> <span class="o">==</span>  <span class="mf">0.535</span> <span class="o">-</span> <span class="mf">0.378</span><span class="n">i</span>
+<span class="n">c</span> <span class="o">==</span> <span class="o">-</span><span class="mf">0.465</span> <span class="o">-</span> <span class="mf">0.028</span><span class="n">i</span>
+</pre></div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span><span class="mi">8</span><span class="p">))</span>
+<span class="n">im</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">gpu_escape_time_zn3plusc</span><span class="p">(</span><span class="n">zmesh_re</span><span class="p">,</span> <span class="n">zmesh_im</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.56</span><span class="p">,</span> <span class="mf">0.23</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>
+<span class="n">txt</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="s1">&#39;c = -0.56 + 0.23i&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">SIZE</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">SIZE</span><span class="o">//</span><span class="mi">4</span><span class="p">))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="o">+</span><span class="n">EPS</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">SIZE</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">SIZE</span><span class="o">//</span><span class="mi">4</span><span class="p">))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_yticklabels</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="o">+</span><span class="n">EPS</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Real Axis&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Imaginary Axis&#39;</span><span class="p">)</span>
+<span class="n">fs3</span> <span class="o">=</span> <span class="n">FractalExplorer</span><span class="p">(</span><span class="n">gpu_escape_time_zn3plusc</span><span class="p">,</span> <span class="n">fig</span><span class="p">,</span> <span class="n">im</span><span class="p">,</span> <span class="n">txt</span><span class="p">,</span> <span class="n">clim</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+<span class="n">fs3</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">size</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2540</span><span class="p">,</span> <span class="mi">1440</span><span class="p">)</span>
+<span class="n">colormap_name</span> <span class="o">=</span> <span class="s1">&#39;hot&#39;</span>
+
+<span class="n">step</span> <span class="o">=</span> <span class="mf">4.5</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="n">size</span><span class="p">)</span> 
+<span class="n">lims</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span><span class="o">*</span><span class="n">step</span><span class="o">/</span><span class="mf">2.0</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">size</span><span class="p">]</span>
+<span class="n">offs</span> <span class="o">=</span> <span class="mf">0.0</span>  <span class="c1"># shifts the window vertical due to cubic fractals being vertically skewed</span>
+<span class="n">zmesh_wp_re</span><span class="p">,</span> <span class="n">zmesh_wp_im</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">cp</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">lims</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">lims</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="n">EPS</span><span class="p">,</span> <span class="n">step</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">cp</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+                                     <span class="n">cp</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">lims</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">offs</span><span class="p">,</span> <span class="n">lims</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="n">EPS</span><span class="p">,</span> <span class="n">step</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">cp</span><span class="o">.</span><span class="n">float32</span><span class="p">))</span>
+
+<span class="c1"># Get the last-chosen c-value from the text box (I had trouble doing this other ways ... ?)</span>
+<span class="n">txt_parts</span> <span class="o">=</span> <span class="n">txt</span><span class="o">.</span><span class="n">get_text</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
+<span class="n">c_re</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">txt_parts</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+<span class="n">c_im</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">txt_parts</span><span class="p">[</span><span class="mi">4</span><span class="p">][:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Value from mouse selection above: </span><span class="si">{</span><span class="n">c_re</span><span class="si">:</span><span class="s1">.3f</span><span class="si">}</span><span class="s1"> + </span><span class="si">{</span><span class="n">c_im</span><span class="si">:</span><span class="s1">.3f</span><span class="si">}</span><span class="s1">i&#39;</span><span class="p">)</span>
+
+<span class="n">fractal</span> <span class="o">=</span> <span class="n">gpu_escape_time_zn3plusc</span><span class="p">(</span><span class="n">zmesh_wp_re</span><span class="p">,</span> <span class="n">zmesh_wp_im</span><span class="p">,</span> <span class="n">c_re</span><span class="p">,</span> <span class="n">c_im</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<span class="n">norm</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">Normalize</span><span class="p">(</span><span class="n">vmin</span><span class="o">=</span><span class="n">fractal</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">vmax</span><span class="o">=</span><span class="n">fractal</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+<span class="n">image</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="n">colormap_name</span><span class="p">)(</span><span class="n">norm</span><span class="p">(</span><span class="n">fractal</span><span class="p">))</span>
+<span class="n">fig</span><span class="p">,</span><span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span> <span class="o">*</span> <span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Your Fractal Wallpaper is Ready!  (wallpaper_fractal.png)&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">imsave</span><span class="p">(</span><span class="s1">&#39;wallpaper_fractal_zn3p1.png&#39;</span><span class="p">,</span> <span class="n">image</span><span class="p">[:</span><span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">:</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">:])</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="good-fractal-map-for-the-z-sup-3-sup-c-variant">
+<h2>“Good Fractal Map” for the z<sup>3</sup> + c Variant<a class="headerlink" href="#good-fractal-map-for-the-z-sup-3-sup-c-variant" title="Permalink to this heading">#</a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">z3_c_map</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">GRID</span><span class="p">,</span> <span class="n">GRID</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float&#39;</span><span class="p">)</span>
+
+<span class="n">t_start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">j</span><span class="p">,</span><span class="n">c_re</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">LIM</span><span class="p">,</span> <span class="n">LIM</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">LIM</span> <span class="o">+</span> <span class="n">EPS</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">GRID</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))):</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">c_im</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">LIM</span><span class="p">,</span> <span class="n">LIM</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">LIM</span> <span class="o">+</span> <span class="n">EPS</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">GRID</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))):</span>
+        <span class="n">z3_c_map</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">evaluate_fractal</span><span class="p">(</span><span class="n">gpu_escape_time_zn3plusc</span><span class="p">,</span> <span class="n">zmesh_re</span><span class="p">,</span> <span class="n">zmesh_im</span><span class="p">,</span> <span class="n">c_re</span><span class="p">,</span> <span class="n">c_im</span><span class="p">,</span> <span class="n">score_mask</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Evaluated </span><span class="si">{</span><span class="n">GRID</span><span class="o">*</span><span class="n">GRID</span><span class="si">:</span><span class="s1">,d</span><span class="si">}</span><span class="s1"> in </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="o">-</span><span class="n">t_start</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1"> seconds&#39;</span><span class="p">)</span>
+<span class="n">time_per_fractal</span> <span class="o">=</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t_start</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">GRID</span> <span class="o">*</span> <span class="n">GRID</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;GPU - Time to compute each </span><span class="si">{</span><span class="n">SIZE</span><span class="si">}</span><span class="s1">x</span><span class="si">{</span><span class="n">SIZE</span><span class="si">}</span><span class="s1"> fractal, FFT, reduce: </span><span class="si">{</span><span class="n">time_per_fractal</span><span class="si">:</span><span class="s1">.4f</span><span class="si">}</span><span class="s1"> sec&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span><span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="mi">6</span><span class="p">))</span>
+<span class="n">z3_disp_good_c_map</span> <span class="o">=</span> <span class="n">z3_c_map</span><span class="p">[</span><span class="mi">2</span><span class="p">:</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">z3_disp_good_c_map</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">lin_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">c_map</span><span class="p">)</span>
+<span class="n">j</span><span class="p">,</span> <span class="n">i</span> <span class="o">=</span> <span class="n">lin_max</span> <span class="o">//</span> <span class="n">GRID</span><span class="p">,</span> <span class="n">lin_max</span> <span class="o">%</span> <span class="n">GRID</span>
+<span class="n">highest_freq_fractal</span> <span class="o">=</span> <span class="n">gpu_escape_time_zn3plusc</span><span class="p">(</span><span class="n">zmesh_re</span><span class="p">,</span> <span class="n">zmesh_im</span><span class="p">,</span> <span class="o">-</span><span class="n">LIM</span><span class="o">+</span><span class="n">i</span><span class="o">*</span><span class="n">STEP</span><span class="p">,</span> <span class="o">-</span><span class="n">LIM</span><span class="o">+</span><span class="n">j</span><span class="o">*</span><span class="n">STEP</span><span class="p">)</span>
+<span class="n">fig</span><span class="p">,</span><span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span><span class="mi">8</span><span class="p">))</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">highest_freq_fractal</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<hr class="docutils" />
+<section id="fft-timings-cpu-gpu-agnostic-code">
+<h2>FFT Timings &amp; CPU/GPU-Agnostic Code<a class="headerlink" href="#fft-timings-cpu-gpu-agnostic-code" title="Permalink to this heading">#</a></h2>
+<p>We combine this timing code with an demonstration of how to write GPU-agnostic code</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># &quot;xp&quot; is used when it could be CuPy (cp) or NumPy (np) depending on inputs</span>
+<span class="n">num_test</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="n">size</span> <span class="o">=</span> <span class="mi">1024</span>
+
+<span class="k">def</span> <span class="nf">test_fft_module</span><span class="p">(</span><span class="n">random_input</span><span class="p">,</span> <span class="n">n_test</span><span class="p">):</span>
+    <span class="n">xp</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">get_array_module</span><span class="p">(</span><span class="n">random_input</span><span class="p">)</span>
+    <span class="n">modname</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">xp</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;&quot;</span><span class="se">\&#39;</span><span class="s1">&#39;</span><span class="p">)</span>
+    
+    <span class="k">with</span> <span class="n">SimpleTimers</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">modname</span><span class="si">}</span><span class="s1">-fft&#39;</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=</span><span class="n">n_test</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_test</span><span class="p">):</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fft2</span><span class="p">(</span><span class="n">random_input</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:])</span>
+    
+<span class="n">test_fft_module</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">num_test</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">size</span><span class="p">)),</span> <span class="n">num_test</span><span class="p">)</span>
+<span class="n">test_fft_module</span><span class="p">(</span><span class="n">cp</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">num_test</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">size</span><span class="p">)),</span> <span class="n">num_test</span><span class="p">)</span>
+
+<span class="c1"># In other cases, we would make the function take an array argument and use</span>
+<span class="c1">#   xp = cp.get_array_module(my_array)</span>
+
+<span class="n">cpu_speed</span> <span class="o">=</span> <span class="n">SimpleTimers</span><span class="o">.</span><span class="n">get_iter_per_sec</span><span class="p">(</span><span class="s1">&#39;numpy-fft&#39;</span><span class="p">)</span>
+<span class="n">gpu_speed</span> <span class="o">=</span> <span class="n">SimpleTimers</span><span class="o">.</span><span class="n">get_iter_per_sec</span><span class="p">(</span><span class="s1">&#39;cupy-fft&#39;</span><span class="p">)</span>
+<span class="n">speed_ratio</span> <span class="o">=</span> <span class="n">gpu_speed</span> <span class="o">/</span> <span class="n">cpu_speed</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;GPU Speedup for </span><span class="si">{</span><span class="n">size</span><span class="si">}</span><span class="s1">x</span><span class="si">{</span><span class="n">size</span><span class="si">}</span><span class="s1"> FFTs: </span><span class="si">{</span><span class="n">speed_ratio</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p><img alt="" src="../../fractal_explorer_small.gif" /></p>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./sources"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+                <footer class="bd-footer-article">
+                  
+<div class="footer-article-items footer-article__inner">
+  
+    <div class="footer-article-item"><!-- Previous / next buttons -->
+<div class="prev-next-area">
+</div></div>
+  
+</div>
+
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Fun With Fractals and CuPy on GPU</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#background">Background</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hardware">Hardware</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#summary-of-findings-aggregated-from-running-the-notebook">Summary of findings aggregated from running the notebook.</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cupy-sanity-checks">CuPy Sanity Checks</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cpu-numpy-fractal-generation-speed-test">2. (CPU / Numpy) Fractal Generation Speed Test</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#gpu-implementation">3. GPU Implementation</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#define-the-cuda-kernel-using-cupy-elementwisekernel">Define the CUDA Kernel using CuPy <code class="docutils literal notranslate"><span class="pre">ElementwiseKernel</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gpu-timing-tests">GPU Timing Tests</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#speed-summary">Speed Summary</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#interactive-fractals">4. Interactive Fractals!</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#create-a-desktop-wallpaper-of-your-fractal">Create a desktop wallpaper of your fractal!</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gpu-fractal-search">5. GPU Fractal Search!</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#simple-data-pipeline-through-the-gpu">Simple data pipeline through the GPU</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-good-fractal-map-is-a-fractal">The Good-Fractal Map is … a fractal ?!</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cubic-fractal">Cubic Fractal</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#good-fractal-map-for-the-z-sup-3-sup-c-variant">“Good Fractal Map” for the z<sup>3</sup> + c Variant</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fft-timings-cpu-gpu-agnostic-code">FFT Timings &amp; CPU/GPU-Agnostic Code</a></li>
+</ul>
+</li>
+</ul>
+
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Avi
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  <p class="copyright">
+    
+      © Copyright 2022.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=e353d410970836974a52"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
