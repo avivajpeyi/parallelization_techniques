@@ -53,6 +53,40 @@
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
     <script src="../_static/togglebutton.js"></script>
+    <script kind="utterances">
+
+    var commentsRunWhenDOMLoaded = cb => {
+    if (document.readyState != 'loading') {
+        cb()
+    } else if (document.addEventListener) {
+        document.addEventListener('DOMContentLoaded', cb)
+    } else {
+        document.attachEvent('onreadystatechange', function() {
+        if (document.readyState == 'complete') cb()
+        })
+    }
+}
+
+var addUtterances = () => {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src = "https://utteranc.es/client.js";
+    script.async = "async";
+
+    script.setAttribute("repo", "avivajpeyi/parallelization_techniques");
+    script.setAttribute("issue-term", "pathname");
+    script.setAttribute("theme", "github-light");
+    script.setAttribute("label", "💬 comment");
+    script.setAttribute("crossorigin", "anonymous");
+
+    sections = document.querySelectorAll("div.section");
+    if (sections !== null) {
+        section = sections[sections.length-1];
+        section.appendChild(script);
+    }
+}
+commentsRunWhenDOMLoaded(addUtterances);
+</script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script src="../_static/design-tabs.js"></script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
@@ -152,7 +186,7 @@ const thebe_selector_output = ".output, .cell_output"
         </ul>
         <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../overview.html">Overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../basics.html">Basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basics.html">Py Parallelization Basics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pi_estimator.html">π-Estimator</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">N-Body Simulation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="fractal.html">Fractal Generation</a></li>
@@ -197,6 +231,37 @@ const thebe_selector_output = ".output, .cell_output"
         <div class="header-article-item">
 
 <div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-launch-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Launch interactive content">
+    <i class="fas fa-rocket"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://colab.research.google.com/github/avivajpeyi/parallelization_techniques/blob/main/docs/exercises/nbody.ipynb" target="_blank"
+   class="btn btn-sm dropdown-item"
+   title="Launch onColab"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  
+    <img src="../_static/images/logo_colab.png">
+  </span>
+<span class="btn__text-container">Colab</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
 
 
 
@@ -364,9 +429,22 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article" role="main">
                   
-  <div class="cell docutils container">
+  <section class="tex2jax_ignore mathjax_ignore" id="n-body-simulation">
+<h1>N-Body Simulation<a class="headerlink" href="#n-body-simulation" title="Permalink to this heading">#</a></h1>
+<p>Below we have a basic implementation of an N-body simulation. We will use this as a baseline to compare against a vectorized/Cupy/multiprocessing implementations.</p>
+<p>There are two main functions:</p>
+<ul class="simple">
+<li><p>the <code class="docutils literal notranslate"><span class="pre">newtonian_acceleration(pos,</span> <span class="pre">mass,</span> <span class="pre">G,</span> <span class="pre">softening)</span></code> which calculates the acceleration of each particle due to the gravitational force from all other particles. This is the most computationally expensive part of the simulation.</p></li>
+<li><p>the <code class="docutils literal notranslate"><span class="pre">nbody_runner()</span></code> which runs the simulation for a given number of particles and time steps.</p></li>
+</ul>
+<div class="cell tag_hide-cell docutils container">
+<details class="hide above-input">
+<summary aria-label="Toggle hidden content">
+<span class="collapsed">Show code cell content</span>
+<span class="expanded">Hide code cell content</span>
+</summary>
 <div class="cell_input docutils container">
-<div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="c1">## Import some utils</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Some utils</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">import</span> <span class="nn">imageio</span>
 <span class="kn">import</span> <span class="nn">os</span>
@@ -474,31 +552,13 @@ document.write(`
 </pre></div>
 </div>
 </div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>IOStream.flush timed out
-IOStream.flush timed out
-<span class=" -Color -Color-Yellow">WARNING: Skipping /usr/local/lib/python3.11/site-packages/numpy-1.25.2-py3.11.egg-info due to invalid metadata entry &#39;name&#39;</span>
-<span class=" -Color -Color-Yellow">WARNING: Skipping /usr/local/lib/python3.11/site-packages/numpy-1.25.2-py3.11.egg-info due to invalid metadata entry &#39;name&#39;</span>
-<span class=" -Color -Color-Yellow">WARNING: Skipping /usr/local/lib/python3.11/site-packages/numpy-1.25.2-py3.11.egg-info due to invalid metadata entry &#39;name&#39;</span>
-<span class=" -Color -Color-Yellow">WARNING: Skipping /usr/local/lib/python3.11/site-packages/numpy-1.25.2-py3.11.egg-info due to invalid metadata entry &#39;name&#39;</span>
-
-</pre></div>
+</details>
 </div>
-</div>
-</div>
-<section class="tex2jax_ignore mathjax_ignore" id="n-body-simulation">
-<h1>N-Body Simulation<a class="headerlink" href="#n-body-simulation" title="Permalink to this heading">#</a></h1>
-<p>Below we have a basic implementation of an N-body simulation. We will use this as a baseline to compare against a vectorized/Cupy/multiprocessing implementations.</p>
-<p>There are two main functions:</p>
-<ul class="simple">
-<li><p>the <code class="docutils literal notranslate"><span class="pre">newtonian_acceleration(pos,</span> <span class="pre">mass,</span> <span class="pre">G,</span> <span class="pre">softening)</span></code> which calculates the acceleration of each particle due to the gravitational force from all other particles. This is the most computationally expensive part of the simulation.</p></li>
-<li><p>the <code class="docutils literal notranslate"><span class="pre">nbody_runner()</span></code> which runs the simulation for a given number of particles and time steps.</p></li>
-</ul>
 <section id="basic-loop-implementation">
 <h2>Basic “Loop” Implementation<a class="headerlink" href="#basic-loop-implementation" title="Permalink to this heading">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
 <span class="kn">from</span> <span class="nn">tqdm.auto</span> <span class="kn">import</span> <span class="n">trange</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -598,7 +658,7 @@ IOStream.flush timed out
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>25.6 ms ± 0 ns per loop (mean ± std. dev. of 1 run, 1 loop each)
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>32.8 ms ± 0 ns per loop (mean ± std. dev. of 1 run, 1 loop each)
 </pre></div>
 </div>
 </div>
@@ -606,7 +666,7 @@ IOStream.flush timed out
 <p>Lets make a plot/gif of the particle positions</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">plot_particles</span><span class="p">(</span><span class="n">positions</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">n_time_total</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;tab:blue&#39;</span><span class="p">):</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">plot_particles</span><span class="p">(</span><span class="n">positions</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">n_time_total</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;tab:blue&#39;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Plot the positions of particles in 2D</span>
 
 <span class="sd">    Parameters</span>
@@ -687,18 +747,18 @@ IOStream.flush timed out
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="n">positions</span> <span class="o">=</span> <span class="n">nbody_runner_basic</span><span class="p">(</span><span class="n">N</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">random_seed</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">tEnd</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">positions</span> <span class="o">=</span> <span class="n">nbody_runner_basic</span><span class="p">(</span><span class="n">N</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">random_seed</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">tEnd</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span>
 <span class="n">plot_particle_gif</span><span class="p">(</span><span class="n">positions</span><span class="p">,</span> <span class="n">outdir</span><span class="o">=</span><span class="s1">&#39;out_basic&#39;</span><span class="p">,</span> <span class="n">dur</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<script type="application/vnd.jupyter.widget-view+json">{"version_major": 2, "version_minor": 0, "model_id": "1c0508c8d01c4090b54fdcd15a43d0fa"}</script><script type="application/vnd.jupyter.widget-view+json">{"version_major": 2, "version_minor": 0, "model_id": "8b19fb21b2ed443e834f8644722796b5"}</script><div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Gif saved to out_basic/orbit.gif
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "157535c78c8c452a94b68d243309fc0f", "version_major": 2, "version_minor": 0}</script><script type="application/vnd.jupyter.widget-view+json">{"model_id": "d11456e2619540eb8affeaae0e386583", "version_major": 2, "version_minor": 0}</script><div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Gif saved to out_basic/orbit.gif
 </pre></div>
 </div>
 </div>
 </div>
-<p><img alt="out_basic/orbit.gif" src="exercises/out_basic/orbit.gif" /></p>
+<p><img alt="out_basic/orbit.gif" src="../_images/orbit.gif" /></p>
 </section>
 <section id="numpy-vectorized-implementation">
 <h2>Numpy-Vectorized Implementation<a class="headerlink" href="#numpy-vectorized-implementation" title="Permalink to this heading">#</a></h2>
@@ -708,7 +768,7 @@ IOStream.flush timed out
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">newtonian_acceleration_np</span><span class="p">(</span><span class="n">pos</span><span class="p">,</span> <span class="n">mass</span><span class="p">,</span> <span class="n">G</span><span class="p">,</span> <span class="n">softening</span><span class="p">):</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">newtonian_acceleration_np</span><span class="p">(</span><span class="n">pos</span><span class="p">,</span> <span class="n">mass</span><span class="p">,</span> <span class="n">G</span><span class="p">,</span> <span class="n">softening</span><span class="p">):</span>
     <span class="c1"># positions r = [x,y,z] for all particles</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">pos</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">:</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">y</span> <span class="o">=</span> <span class="n">pos</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span>
@@ -793,7 +853,7 @@ Basic &#39;Loop&#39; time:
 <p>Lets make a plot of the runtime for different numbers of particles using the two different methods</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">plot_runtimes</span><span class="p">(</span><span class="n">n_particles</span><span class="p">,</span> <span class="n">n_trials</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">plot_runtimes</span><span class="p">(</span><span class="n">n_particles</span><span class="p">,</span> <span class="n">n_trials</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
     <span class="n">kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">max_runtime</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
     <span class="n">vectorized</span> <span class="o">=</span> <span class="n">collect_runtimes</span><span class="p">(</span><span class="n">nbody_runner_np</span><span class="p">,</span> <span class="n">n_particles</span><span class="p">,</span> <span class="n">n_trials</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="n">basic</span> <span class="o">=</span> <span class="n">collect_runtimes</span><span class="p">(</span><span class="n">nbody_runner_basic</span><span class="p">,</span> <span class="n">n_particles</span><span class="p">,</span> <span class="n">n_trials</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="n">kwargs</span><span class="p">)</span>
@@ -822,26 +882,23 @@ Basic &#39;Loop&#39; time:
 </pre></div>
 </div>
 </div>
-<div class="cell_output docutils container">
-<script type="application/vnd.jupyter.widget-view+json">{"version_major": 2, "version_minor": 0, "model_id": "1ee67a451eb34600b808d62c8c869f71"}</script><script type="application/vnd.jupyter.widget-view+json">{"version_major": 2, "version_minor": 0, "model_id": "ca31068019034ab8b3888fc7f397575a"}</script><img alt="../_images/6834109c45f3fca319119b4ac67175331000e63161b556bd23b81362047a0077.png" src="../_images/6834109c45f3fca319119b4ac67175331000e63161b556bd23b81362047a0077.png" />
-</div>
 </div>
 <p><img alt="nbody_runtimes.png" src="exercises/nbody_runtimes.png" /></p>
 <p>Lets make a slightly longer gif with more particles using the vectorized implementation.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="n">positions</span> <span class="o">=</span> <span class="n">nbody_runner_np</span><span class="p">(</span><span class="n">N</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">random_seed</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">tEnd</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">positions</span> <span class="o">=</span> <span class="n">nbody_runner_np</span><span class="p">(</span><span class="n">N</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">random_seed</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">tEnd</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 <span class="n">plot_particle_gif</span><span class="p">(</span><span class="n">positions</span><span class="p">,</span> <span class="n">outdir</span><span class="o">=</span><span class="s1">&#39;out_nb_np&#39;</span><span class="p">,</span> <span class="n">dur</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<script type="application/vnd.jupyter.widget-view+json">{"version_major": 2, "version_minor": 0, "model_id": "ac43e911701e474eb6bc97bdf30eb32e"}</script><script type="application/vnd.jupyter.widget-view+json">{"version_major": 2, "version_minor": 0, "model_id": "fc57f1cff2d94495a8c28cf37067b863"}</script><div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Gif saved to out_nb_np/orbit.gif
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "ac43e911701e474eb6bc97bdf30eb32e", "version_major": 2, "version_minor": 0}</script><script type="application/vnd.jupyter.widget-view+json">{"model_id": "fc57f1cff2d94495a8c28cf37067b863", "version_major": 2, "version_minor": 0}</script><div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Gif saved to out_nb_np/orbit.gif
 </pre></div>
 </div>
 </div>
 </div>
-<p><img alt="out_nb_np/orbit.gif" src="../_images/orbit.gif" /></p>
+<p><img alt="out_nb_np/orbit.gif" src="../_images/orbit1.gif" /></p>
 </section>
 <section id="questions">
 <h2>Questions<a class="headerlink" href="#questions" title="Permalink to this heading">#</a></h2>
@@ -855,7 +912,13 @@ Basic &#39;Loop&#39; time:
 </ol>
 <p>I’ll release the answers after the workshop. (Please remind me if i dont lol)</p>
 <p>Share your plots/code/cool GIFs down below (in the website version of this page)! 😄</p>
-</section>
+<script src="https://utteranc.es/client.js"
+        repo="avivajpeyi/parallelization_techniques"
+        issue-term="title"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+</script></section>
 </section>
 
     <script type="text/x-thebe-config">

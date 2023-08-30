@@ -53,6 +53,40 @@
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
     <script src="../_static/togglebutton.js"></script>
+    <script kind="utterances">
+
+    var commentsRunWhenDOMLoaded = cb => {
+    if (document.readyState != 'loading') {
+        cb()
+    } else if (document.addEventListener) {
+        document.addEventListener('DOMContentLoaded', cb)
+    } else {
+        document.attachEvent('onreadystatechange', function() {
+        if (document.readyState == 'complete') cb()
+        })
+    }
+}
+
+var addUtterances = () => {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src = "https://utteranc.es/client.js";
+    script.async = "async";
+
+    script.setAttribute("repo", "avivajpeyi/parallelization_techniques");
+    script.setAttribute("issue-term", "pathname");
+    script.setAttribute("theme", "github-light");
+    script.setAttribute("label", "💬 comment");
+    script.setAttribute("crossorigin", "anonymous");
+
+    sections = document.querySelectorAll("div.section");
+    if (sections !== null) {
+        section = sections[sections.length-1];
+        section.appendChild(script);
+    }
+}
+commentsRunWhenDOMLoaded(addUtterances);
+</script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script src="../_static/design-tabs.js"></script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
@@ -67,7 +101,7 @@ const thebe_selector_output = ".output, .cell_output"
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="N-Body Simulation" href="nbody.html" />
-    <link rel="prev" title="Basics" href="../basics.html" />
+    <link rel="prev" title="Py Parallelization Basics" href="../basics.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -154,7 +188,7 @@ const thebe_selector_output = ".output, .cell_output"
         </ul>
         <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../overview.html">Overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../basics.html">Basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basics.html">Py Parallelization Basics</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">π-Estimator</a></li>
 <li class="toctree-l1"><a class="reference internal" href="nbody.html">N-Body Simulation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="fractal.html">Fractal Generation</a></li>
@@ -199,6 +233,37 @@ const thebe_selector_output = ".output, .cell_output"
         <div class="header-article-item">
 
 <div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-launch-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Launch interactive content">
+    <i class="fas fa-rocket"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://colab.research.google.com/github/avivajpeyi/parallelization_techniques/blob/main/docs/exercises/pi_estimator.ipynb" target="_blank"
+   class="btn btn-sm dropdown-item"
+   title="Launch onColab"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  
+    <img src="../_static/images/logo_colab.png">
+  </span>
+<span class="btn__text-container">Colab</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
 
 
 
@@ -366,9 +431,35 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article" role="main">
                   
-  <div class="cell docutils container">
+  <section class="tex2jax_ignore mathjax_ignore" id="estimator">
+<h1>π-Estimator<a class="headerlink" href="#estimator" title="Permalink to this heading">#</a></h1>
+<p><strong>Monte Carlo Estimation</strong></p>
+<p>Monte Carlo methods are a variety of computational techniques that involve repeatedly sampling random values to obtain numerical outcomes.
+An easy example of starting with the Monte Carlo algorithm is approximating the value of π.</p>
+<p><strong>Estimating π</strong></p>
+<ul class="simple">
+<li><p>Imagine a circle (radius r, centered at 0,0) inscribed in a square on a 2-D plane (side 2r, centered at 0,0).</p></li>
+<li><p>Add some random (x, y) points within the square and check how many fall within the circle (x² + y² ≤ 1).</p></li>
+<li><p>By comparing the counts of points in and out of the circle and square, we can estimate π (π ~ 4 * (circle count / square count).</p></li>
+<li><p><em>More iterations improve accuracy</em>.</p></li>
+</ul>
+<p>The math works out as follows:</p>
+<ul class="simple">
+<li><p>The area of the square is 2r*2r = 4r².</p></li>
+<li><p>The area of the circle is πr².</p></li>
+</ul>
+<div class="math notranslate nohighlight">
+\[ \frac{\rm area(circle)}{\rm area(square)} = \frac{\pi r^2}{4 r^2}\]</div>
+<div class="math notranslate nohighlight">
+\[ \implies \pi = 4 \frac{\rm area(circle)}{\rm area(square)} \]</div>
+<div class="cell tag_hide-cell docutils container">
+<details class="hide above-input">
+<summary aria-label="Toggle hidden content">
+<span class="collapsed">Show code cell content</span>
+<span class="expanded">Hide code cell content</span>
+</summary>
 <div class="cell_input docutils container">
-<div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">imageio</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">imageio</span>
 <span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">rcParams</span>
 <span class="kn">import</span> <span class="nn">glob</span>
 <span class="kn">import</span> <span class="nn">os</span>
@@ -405,35 +496,15 @@ document.write(`
 </pre></div>
 </div>
 </div>
+</details>
 </div>
-<section class="tex2jax_ignore mathjax_ignore" id="estimator">
-<h1>π-Estimator<a class="headerlink" href="#estimator" title="Permalink to this heading">#</a></h1>
-<p><strong>Monte Carlo Estimation</strong></p>
-<p>Monte Carlo methods are a variety of computational techniques that involve repeatedly sampling random values to obtain numerical outcomes.
-An easy example of starting with the Monte Carlo algorithm is approximating the value of π.</p>
-<p><strong>Estimating π</strong></p>
-<ul class="simple">
-<li><p>Imagine a circle (radius r, centered at 0,0) inscribed in a square on a 2-D plane (side 2r, centered at 0,0).</p></li>
-<li><p>Add some random (x, y) points within the square and check how many fall within the circle (x² + y² ≤ 1).</p></li>
-<li><p>By comparing the counts of points in and out of the circle and square, we can estimate π (π ~ 4 * (circle count / square count).</p></li>
-<li><p><em>More iterations improve accuracy</em>.</p></li>
-</ul>
-<p>The math works out as follows:</p>
-<ul class="simple">
-<li><p>The area of the square is 2r*2r = 4r².</p></li>
-<li><p>The area of the circle is πr².</p></li>
-</ul>
-<div class="math notranslate nohighlight">
-\[ \frac{\rm area(circle)}{\rm area(square)} = \frac{\pi r^2}{4 r^2}\]</div>
-<div class="math notranslate nohighlight">
-\[ \implies \pi = 4 \frac{\rm area(circle)}{\rm area(square)} \]</div>
 <section id="base-implementation">
 <h2>Base Implementation<a class="headerlink" href="#base-implementation" title="Permalink to this heading">#</a></h2>
 <p>Here is a simple python implementation:</p>
 <p>First, we need to save the code in a file (we’ll need this later for multiprocessing):</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="o">%%writefile</span> pi_estimator.py
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%writefile</span> pi_estimator.py
 
 <span class="kn">import</span> <span class="nn">random</span>
 
@@ -459,7 +530,7 @@ An easy example of starting with the Monte Carlo algorithm is approximating the 
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">random</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">random</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">pi_estimator</span> <span class="kn">import</span> <span class="n">pi_estimation</span>
 
@@ -496,7 +567,7 @@ Runtime: 0.050 s
 <h2>Implementation with multiprocessing<a class="headerlink" href="#implementation-with-multiprocessing" title="Permalink to this heading">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">multiprocessing</span> <span class="k">as</span> <span class="nn">mp</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">multiprocessing</span> <span class="k">as</span> <span class="nn">mp</span>
 <span class="kn">from</span> <span class="nn">pi_estimator</span> <span class="kn">import</span> <span class="n">pi_estimation</span>
 
 <span class="n">num_cpu</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span>
@@ -531,7 +602,7 @@ Runtime: 0.008 s
 <p>Let’s plot the estimated value and runtime with different N values:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">process_time</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 
@@ -589,12 +660,13 @@ Runtime: 0.008 s
 <img alt="../_images/d1400bd89c8f47fa4233094db6de0a3f6ed8baf803d6d93e3e3b9ca181609be7.png" src="../_images/d1400bd89c8f47fa4233094db6de0a3f6ed8baf803d6d93e3e3b9ca181609be7.png" />
 </div>
 </div>
-<p>The parallel-multiprocess runtime is doing so much better!
-<img alt="" src="https://media.tenor.com/13nqCZN1pb4AAAAC/minion-king.gif" /></p>
+<p>The parallel-multiprocess runtime is doing so much better!</p>
+<p><img alt="" src="https://media.tenor.com/13nqCZN1pb4AAAAC/minion-king.gif" /></p>
+<p><em>what happens if we increase N further?</em></p>
 <p>Finally, lets also make a gif for fun :D</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">tqdm.auto</span> <span class="kn">import</span> <span class="n">tqdm</span>
 
 
@@ -636,7 +708,7 @@ Runtime: 0.008 s
 </div>
 </div>
 <div class="cell_output docutils container">
-<script type="application/vnd.jupyter.widget-view+json">{"version_major": 2, "version_minor": 0, "model_id": "3a56d22fa8cd4ba6a9ceb85678a010a5"}</script><div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Saved GIF to pi_estimation.gif
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "3a56d22fa8cd4ba6a9ceb85678a010a5", "version_major": 2, "version_minor": 0}</script><div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Saved GIF to pi_estimation.gif
 </pre></div>
 </div>
 </div>
@@ -654,7 +726,13 @@ Runtime: 0.008 s
 </ol>
 <p>I’ll release the answers after the workshop. (Please remind me if i don’t lol)</p>
 <p>Share your plots/code/cool GIFs down below (in the website version of this page)! 😄</p>
-</section>
+<script src="https://utteranc.es/client.js"
+        repo="avivajpeyi/parallelization_techniques"
+        issue-term="title"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+</script></section>
 </section>
 
     <script type="text/x-thebe-config">
@@ -694,7 +772,7 @@ Runtime: 0.008 s
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Basics</p>
+        <p class="prev-next-title">Py Parallelization Basics</p>
       </div>
     </a>
     <a class="right-next"
