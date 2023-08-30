@@ -34,7 +34,7 @@ Parallel computing can be a way forward.
 4. **MIMD**: Multiple processors with different instructions on different data. Your laptop's CPU is a MIMD machine. It has multiple cores, and each core can run different instructions on different data. Eg -- one core can be running a web browser, another can be running a word processor, and another can be running a python script.
 
 
-```note
+```{note}
 For this tutorial we will focus on the SIMD (Single Instruction Multiple Data) type of parallelization.
 ```
 
@@ -77,7 +77,13 @@ for i in range(n):
 The output of the htop system monitor on my laptop while
 this code is running:
 
-<iframe width="560" height="315" src="https://youtu.be/5pV-oFb4jtE?autoplay=1&loop=1&playlist=PLVsZgWtfYk4hP7MUE_K25OAboUdPe4Idh" frameborder="0" allowfullscreen></iframe>​
+| | |
+|-- |--|
+|Not running| ![not_running]|
+|Running| ![running]|
+
+[not_running]: https://github.com/avivajpeyi/parallelization_techniques/assets/15642823/0fb4a33f-ddf1-45e3-8762-8013f5d14f45
+[running]: https://github.com/avivajpeyi/parallelization_techniques/assets/15642823/38870043-7e25-40ea-8a63-6fdd1bbc122d
 
 We can see that 6 of the 12 CPUs on my laptop were running at full speed.
 
@@ -104,7 +110,7 @@ By the early 2000s, views began to shift...
 A GPU (Graphics Processing Unit) is a specialized processor that is designed to perform floating point operations (FLOPs) in parallel, using SIMD (Single Instruction Multiple Data) instructions with a large number of cores.
 ![](static/gpu_vs_cpu.png)
 
-```warning
+```{warning}
 A GPU wont be able to _replace_ CPUs, as it is not designed to do the same things. GPUs are designed to do a few things very well, and CPUs are designed to do many things well. 
 ```
 
