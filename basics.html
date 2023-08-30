@@ -64,7 +64,7 @@ const thebe_selector_output = ".output, .cell_output"
     <script>DOCUMENTATION_OPTIONS.pagename = 'basics';</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Fractal Generation" href="excercises/fractal.html" />
+    <link rel="next" title="π-Estimator" href="exercises/pi_estimator.html" />
     <link rel="prev" title="Overview" href="overview.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -153,9 +153,9 @@ const thebe_selector_output = ".output, .cell_output"
         <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Basics</a></li>
-<li class="toctree-l1"><a class="reference internal" href="excercises/fractal.html">Fractal Generation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="excercises/nbody.html">N-Body Simulation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="excercises/pi_estimator.html">π-Estimator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="exercises/pi_estimator.html">π-Estimator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="exercises/nbody.html">N-Body Simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="exercises/fractal.html">Fractal Generation</a></li>
 </ul>
 
     </div>
@@ -349,7 +349,10 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#demo-1-using-vectorization">DEMO 1: using <code class="docutils literal notranslate"><span class="pre">vectorization</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#vectorization">Vectorization</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#multiprocessing-and-multithreading">Multiprocessing and Multithreading</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gpu-tpu">GPU + TPU</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#lets-make-a-runtime-comparison-plot">Lets make a runtime comparison plot</a></li>
 </ul>
             </nav>
         </div>
@@ -365,6 +368,17 @@ document.write(`
 <h1>Basics<a class="headerlink" href="#basics" title="Permalink to this heading">#</a></h1>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
+<div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">load_ext</span> autoreload
+<span class="o">%</span><span class="k">autoreload</span> 2
+</pre></div>
+</div>
+</div>
+</div>
+<section id="vectorization">
+<h2>Vectorization<a class="headerlink" href="#vectorization" title="Permalink to this heading">#</a></h2>
+<p>Lets start with a simple vectorization example</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
 <div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">process_time</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
@@ -376,16 +390,54 @@ document.write(`
 
 
 <span class="k">def</span> <span class="nf">runtime_loops</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="n">_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
     <span class="n">t0</span> <span class="o">=</span> <span class="n">process_time</span><span class="p">()</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)):</span>
-        <span class="n">_</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">fn</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+    <span class="n">rows</span><span class="p">,</span> <span class="n">cols</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">rows</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">cols</span><span class="p">):</span>
+            <span class="n">fn</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">])</span>
     <span class="k">return</span> <span class="n">process_time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span>
 
 
 <span class="k">def</span> <span class="nf">runtime_np_vectorized</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
     <span class="n">t0</span> <span class="o">=</span> <span class="n">process_time</span><span class="p">()</span>
-    <span class="n">_</span> <span class="o">=</span> <span class="n">fn</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">fn</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">process_time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span>
+
+<span class="n">N</span> <span class="o">=</span> <span class="mi">1000</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float32&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loops: </span><span class="si">{</span><span class="n">runtime_loops</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Vectorized: </span><span class="si">{</span><span class="n">runtime_np_vectorized</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="multiprocessing-and-multithreading">
+<h2>Multiprocessing and Multithreading<a class="headerlink" href="#multiprocessing-and-multithreading" title="Permalink to this heading">#</a></h2>
+<p>For multiprocessing and multithreading, things will work better if you first <em>save</em> the code to file, and then import the functions. This is because the multiprocessing module will need to import the code in a new process, and it will not be able to find the functions if they are defined in a notebook cell.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="o">%%writefile</span> basics_multi_demo.py
+
+<span class="kn">import</span> <span class="nn">multiprocessing</span> <span class="k">as</span> <span class="nn">mp</span>
+<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">process_time</span>
+
+<span class="n">N_CPUS</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">fn</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="n">x</span> <span class="o">*</span> <span class="n">x</span> <span class="o">+</span> <span class="n">x</span> <span class="o">*</span> <span class="n">x</span> <span class="o">*</span> <span class="n">x</span>
+
+<span class="k">def</span> <span class="nf">runtime_multiprocessing</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">processes</span><span class="o">=</span><span class="n">N_CPUS</span><span class="p">):</span>
+    <span class="n">pool</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">Pool</span><span class="p">(</span><span class="n">processes</span><span class="o">=</span><span class="n">processes</span><span class="p">)</span>
+    <span class="n">t0</span> <span class="o">=</span> <span class="n">process_time</span><span class="p">()</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">process_time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span>
+
+
+<span class="k">def</span> <span class="nf">runtime_multithreading</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">processes</span><span class="o">=</span><span class="n">N_CPUS</span><span class="p">):</span>
+    <span class="n">pool</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">ThreadPool</span><span class="p">(</span><span class="n">processes</span><span class="o">=</span><span class="n">processes</span><span class="p">)</span>
+    <span class="n">t0</span> <span class="o">=</span> <span class="n">process_time</span><span class="p">()</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">process_time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span>
 </pre></div>
 </div>
@@ -393,9 +445,35 @@ document.write(`
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">multiprocessing</span> <span class="k">as</span> <span class="nn">mp</span>
+<div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">basics_multi_demo</span> <span class="kn">import</span> <span class="n">runtime_multiprocessing</span><span class="p">,</span> <span class="n">runtime_multithreading</span>
 
-<span class="k">try</span><span class="p">:</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loops: </span><span class="si">{</span><span class="n">runtime_loops</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Multiprocessing: </span><span class="si">{</span><span class="n">runtime_multiprocessing</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Multithreading: </span><span class="si">{</span><span class="n">runtime_multithreading</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p><strong>Why is multithreading slower?</strong></p>
+<ul class="simple">
+<li><p>There is overhead associated with managing threads, so you don’t want to use it for basic tasks (like the example).</p></li>
+<li><p>Threading in Python is not great for parallel CPU computation but is perfect for I/O operations such as web scraping, because the processor is sitting idle waiting for data.</p></li>
+<li><p>For CPU intensive processes (doing math), there is little benefit to using the threading module.</p></li>
+</ul>
+<p>Multithreading is best suited for I/O-bound tasks, while multiprocessing is best suited for CPU-bound tasks.</p>
+</section>
+<section id="gpu-tpu">
+<h2>GPU + TPU<a class="headerlink" href="#gpu-tpu" title="Permalink to this heading">#</a></h2>
+<p>Lets test two GPU, graphics processing unit, libraries, <a class="reference external" href="https://docs.cupy.dev/en/stable/user_guide/basic.html">CuPy</a> and <a class="reference external" href="https://jax.readthedocs.io/en/latest/notebooks/quickstart.html">JAX</a> (JAX works with TPUs, tensor processing units as well).</p>
+<div class="highlight-warning notranslate"><div class="highlight"><pre><span></span>On Colab you may need to change your runntime to use a GPU:
+
+&gt; Runtime -&gt; Change runtime type -&gt; Hardware accelerator -&gt; GPU
+
+</pre></div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="k">try</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">cupy</span> <span class="k">as</span> <span class="nn">cp</span>
     <span class="c1"># Check the current device</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;CuPy platform: </span><span class="si">{</span><span class="n">cp</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">Device</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -414,19 +492,6 @@ document.write(`
     <span class="n">JAX_INSTALLED</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Jax not installed&quot;</span><span class="p">)</span>
 
-
-<span class="k">def</span> <span class="nf">runtime_multiprocessing</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="n">pool</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">Pool</span><span class="p">(</span><span class="n">mp</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">())</span>
-    <span class="n">t0</span> <span class="o">=</span> <span class="n">process_time</span><span class="p">()</span>
-    <span class="n">_</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">process_time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span>
-
-
-<span class="k">def</span> <span class="nf">runtime_multithreading</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="n">pool</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">ThreadPool</span><span class="p">(</span><span class="n">mp</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">())</span>
-    <span class="n">t0</span> <span class="o">=</span> <span class="n">process_time</span><span class="p">()</span>
-    <span class="n">_</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">process_time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span>
 
 <span class="k">if</span> <span class="n">JAX_INSTALLED</span><span class="p">:</span>
   <span class="n">jax_fn</span> <span class="o">=</span> <span class="n">jit</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
@@ -449,7 +514,19 @@ document.write(`
     <span class="k">return</span> <span class="n">process_time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span>
 
 
-<span class="n">RUNTIME_FUNCS</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loops: </span><span class="si">{</span><span class="n">runtime_loops</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;CuPy: </span><span class="si">{</span><span class="n">runtime_cupy</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;JAX: </span><span class="si">{</span><span class="n">runtime_jax</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="lets-make-a-runtime-comparison-plot">
+<h2>Lets make a runtime comparison plot<a class="headerlink" href="#lets-make-a-runtime-comparison-plot" title="Permalink to this heading">#</a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="n">RUNTIME_FUNCS</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
     <span class="n">loops</span><span class="o">=</span><span class="n">runtime_loops</span><span class="p">,</span>
     <span class="n">np_vectorized</span><span class="o">=</span><span class="n">runtime_np_vectorized</span><span class="p">,</span>
     <span class="n">multiprocessing</span><span class="o">=</span><span class="n">runtime_multiprocessing</span><span class="p">,</span>
@@ -499,42 +576,6 @@ document.write(`
 </div>
 </div>
 </div>
-<section id="demo-1-using-vectorization">
-<h2>DEMO 1: using <code class="docutils literal notranslate"><span class="pre">vectorization</span></code><a class="headerlink" href="#demo-1-using-vectorization" title="Permalink to this heading">#</a></h2>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython2 notranslate"><div class="highlight"><pre><span></span><span class="n">n</span> <span class="o">=</span> <span class="mi">10000</span>
-<span class="c1"># Generate n random numbers between 0 - 1</span>
-<span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
-<span class="c1">#Generate n random integers between 0 - 100</span>
-<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
-
-
-<span class="c1"># Unvectorized</span>
-<span class="k">def</span> <span class="nf">unvectorized</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-    <span class="n">prediction</span> <span class="o">=</span> <span class="mf">0.0</span>
-
-    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
-        <span class="n">prediction</span> <span class="o">=</span> <span class="n">prediction</span> <span class="o">+</span> <span class="n">theta</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
-
-    <span class="k">return</span> <span class="n">prediction</span>
-
-
-<span class="c1"># Vectorized</span>
-<span class="k">def</span> <span class="nf">vectorized</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-    <span class="n">prediction</span> <span class="o">=</span> <span class="mf">0.0</span>
-
-    <span class="n">prediction</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">theta</span><span class="o">.</span><span class="n">transpose</span><span class="p">(),</span> <span class="n">x</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">prediction</span>
-
-<span class="c1">#Comparing Performance</span>
-<span class="o">%</span> <span class="n">timeit</span> <span class="n">unvectorized</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
-<span class="o">%</span> <span class="n">timeit</span> <span class="n">vectorized</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
 </section>
 </section>
 
@@ -579,11 +620,11 @@ document.write(`
       </div>
     </a>
     <a class="right-next"
-       href="excercises/fractal.html"
+       href="exercises/pi_estimator.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Fractal Generation</p>
+        <p class="prev-next-title">π-Estimator</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -605,7 +646,10 @@ document.write(`
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#demo-1-using-vectorization">DEMO 1: using <code class="docutils literal notranslate"><span class="pre">vectorization</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#vectorization">Vectorization</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#multiprocessing-and-multithreading">Multiprocessing and Multithreading</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gpu-tpu">GPU + TPU</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#lets-make-a-runtime-comparison-plot">Lets make a runtime comparison plot</a></li>
 </ul>
   </nav></div>
 

@@ -153,9 +153,9 @@ const thebe_selector_output = ".output, .cell_output"
         <ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="basics.html">Basics</a></li>
-<li class="toctree-l1"><a class="reference internal" href="excercises/fractal.html">Fractal Generation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="excercises/nbody.html">N-Body Simulation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="excercises/pi_estimator.html">π-Estimator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="exercises/pi_estimator.html">π-Estimator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="exercises/nbody.html">N-Body Simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="exercises/fractal.html">Fractal Generation</a></li>
 </ul>
 
     </div>
@@ -350,6 +350,12 @@ document.write(`
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#flynn-s-taxonomy-and-types-of-parallelization">Flynn’s taxonomy and “types” of parallelization</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#vectorization">Vectorization</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#multiprocessing-vs-multithreading">Multiprocessing vs Multithreading</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#implicit-multithreading-in-numpy">Implicit Multithreading in NumPy</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gpu-computing">GPU computing</a></li>
 </ul>
             </nav>
         </div>
@@ -393,9 +399,59 @@ document.write(`
 </tr>
 </tbody>
 </table>
-<p>We’re unlikely to make drastic improvements in either of these in the near future, due to inherent physical
-limitations on the construction of chips and circuit boards.
-<strong>Parallel computing is a way forward.</strong></p>
+<p>Due to physical limitations on the construction of chips and circuit boards, we’re unlikely to make drastic improvements in increasing the performance of single-chips.
+Parallel computing can be a way forward.</p>
+<section id="flynn-s-taxonomy-and-types-of-parallelization">
+<h2>Flynn’s taxonomy and “types” of parallelization<a class="headerlink" href="#flynn-s-taxonomy-and-types-of-parallelization" title="Permalink to this heading">#</a></h2>
+<p><img alt="" src="static/flynns.png" /></p>
+<ol class="arabic simple">
+<li><p><strong>SISD</strong>: Single processor, single instruction, and data stream. This is the good old sequential computing we’re used to.</p></li>
+<li><p><strong>SIMD</strong>: Single processor, same instruction on multiple data streams in parallel. The ‘embarrassingly parallel’ type of parallelization, all the data needs to be processed in the same way.</p></li>
+<li><p><strong>MISD</strong>: Multiple processors with different instructions on the same data. Say you want to calculate the mean and standard deviation of a dataset. You can do this in parallel by having one processor calculate the mean, and another calculate the standard deviation.</p></li>
+<li><p><strong>MIMD</strong>: Multiple processors with different instructions on different data. Your laptop’s CPU is a MIMD machine. It has multiple cores, and each core can run different instructions on different data. Eg – one core can be running a web browser, another can be running a word processor, and another can be running a python script.</p></li>
+</ol>
+<div class="highlight-note notranslate"><div class="highlight"><pre><span></span>For this tutorial we will focus on the SIMD (Single Instruction Multiple Data) type of parallelization.
+</pre></div>
+</div>
+</section>
+<section id="vectorization">
+<h2>Vectorization<a class="headerlink" href="#vectorization" title="Permalink to this heading">#</a></h2>
+<p>Vectorization is a vertical scaling technique that uses a single CPU core or a GPU more effectively.
+You can compute N operations at the same time <em>if they are all the same operation.</em> (SIMD)</p>
+<center><img src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Flappweb.in2p3.fr%2F~paubert%2FASTERICS_HPC%2Fimages%2Fvectorization.png&f=1&nofb=1&ipt=41dd4a8a2e498cb41cf7052d8d95476d87f7dabb43cabd0e73afda12dc80530d&ipo=images" width="50%"></center>
+#%% md
+<p>If you don’t fully utilize all cores, that’s okay; someone else’s work can fill the gaps.
+If you don’t fully utilize the core’s vector unit, no one else can use them. :(</p>
+</section>
+<section id="multiprocessing-vs-multithreading">
+<h2>Multiprocessing vs Multithreading<a class="headerlink" href="#multiprocessing-vs-multithreading" title="Permalink to this heading">#</a></h2>
+<p><strong>Multiprocessing</strong> involves running multiple processes concurrently using multiple processors. Processes are chains of instructions (programs). This can happen on one machine with multiple CPUs or across a network of machines, often referred to as a cluster. Each process in multiprocessing has its own memory space.</p>
+<p><strong>Multithreading</strong> is similar but threads share the same memory space. Python’s native support for multithreading is limited due to <a class="reference external" href="https://wiki.python.org/moin/GlobalInterpreterLock">legacy design
+features</a>, but scientific libraries like NumPy and Numba can bypass these restrictions for efficient execution.</p>
+<p><img alt="" src="static/multiprocessing_vs_multithreading.png" /></p>
+<section id="implicit-multithreading-in-numpy">
+<h3>Implicit Multithreading in NumPy<a class="headerlink" href="#implicit-multithreading-in-numpy" title="Permalink to this heading">#</a></h3>
+<p>You’ve most likely been using multithreading in your Python code, especially if you’ve used NumPy. NumPy cleverly employs multithreading in much of its compiled code. Here is an examples to illustrate this.</p>
+<p>Run <code class="docutils literal notranslate"><span class="pre">htop</span></code> on your computer in one terminal and then run the following code in a python session:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="n">n</span> <span class="o">=</span> <span class="mi">20</span>
+<span class="n">m</span> <span class="o">=</span> <span class="mi">1000</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">m</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigvals</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The output of the htop system monitor on my laptop while
+this code is running:</p>
+<iframe width="560" height="315" src="https://youtu.be/5pV-oFb4jtE?autoplay=1&loop=1&playlist=PLVsZgWtfYk4hP7MUE_K25OAboUdPe4Idh" frameborder="0" allowfullscreen></iframe>​
+<p>We can see that 6 of the 12 CPUs on my laptop were running at full speed.</p>
+<p>This is because NumPy’s <code class="docutils literal notranslate"><span class="pre">eigvals</span></code> routine neatly splits up the tasks and
+distributes them to different threads.</p>
+</section>
+</section>
+<section id="gpu-computing">
+<h2>GPU computing<a class="headerlink" href="#gpu-computing" title="Permalink to this heading">#</a></h2>
 <p>The pioneer of multiprocessing, and “Father of supercomputing”, <a class="reference external" href="https://www.britannica.com/biography/Seymour-R-Cray">Seymour Cray</a>, once said:</p>
 <blockquote>
 <div><p>If you were plowing a field, which would you rather use? Two strong oxen or 1024 chickens?”</p>
@@ -408,11 +464,13 @@ limitations on the construction of chips and circuit boards.
 He thought it would be absurd to use several processors to crunch
 computations in parallel, in place of one fast processor to crunch computations sequentially.
 By the early 2000s, views began to shift…</p>
-<section id="flynn-s-taxonomy-and-types-of-parallelization">
-<h2>Flynn’s taxonomy and “types” of parallelization<a class="headerlink" href="#flynn-s-taxonomy-and-types-of-parallelization" title="Permalink to this heading">#</a></h2>
-<div class="highlight-note notranslate"><div class="highlight"><pre><span></span>We will focus on the SIMD (Single Instruction Multiple Data) type of parallelization.
+<p>A GPU (Graphics Processing Unit) is a specialized processor that is designed to perform floating point operations (FLOPs) in parallel, using SIMD (Single Instruction Multiple Data) instructions with a large number of cores.
+<img alt="" src="_images/gpu_vs_cpu.png" /></p>
+<div class="highlight-warning notranslate"><div class="highlight"><pre><span></span>A GPU wont be able to _replace_ CPUs, as it is not designed to do the same things. GPUs are designed to do a few things very well, and CPUs are designed to do many things well. 
 </pre></div>
 </div>
+<p>In coding, we can use GPUs to do the heavy lifting of crunching numbers in parallel, and CPUs to do the heavy lifting of managing the program flow:
+<img alt="" src="_images/work_distributed.png" /></p>
 <p>Very relavent video of <a class="reference external" href="https://www.youtube.com/watch?v=Tc_JWE_ypEk">several thousand chickens fighting a few T-rexes</a></p>
 </section>
 </section>
@@ -485,6 +543,12 @@ By the early 2000s, views began to shift…</p>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#flynn-s-taxonomy-and-types-of-parallelization">Flynn’s taxonomy and “types” of parallelization</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#vectorization">Vectorization</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#multiprocessing-vs-multithreading">Multiprocessing vs Multithreading</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#implicit-multithreading-in-numpy">Implicit Multithreading in NumPy</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gpu-computing">GPU computing</a></li>
 </ul>
   </nav></div>
 
