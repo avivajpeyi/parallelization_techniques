@@ -3,8 +3,7 @@
 The goals of this tutorial:
 - Basic concepts of parallelization
 - vectorization
-- threads/processes/GIL
-- MPI
+- threads/processes
 - GPU/TPUs
 - High-level python parallelization techniques
 
@@ -16,4 +15,4 @@ The exercises:
 |:-------------|:----------------------------------:|
 | π-estimation |  ![](excercises/pi_estimation.gif)  |
 | N-Body sim   | ![](excercises/out_nb_np/orbit.gif) |
-| Fractals     | ![]() |
+| Fractals     | ![](https://github.com/avivajpeyi/parallelization_techniques/assets/15642823/fbde2eef-3e97-4f1c-9ae5-dc71880ff0eb) |
