@@ -152,7 +152,6 @@ const thebe_selector_output = ".output, .cell_output"
 <li class="toctree-l1"><a class="reference internal" href="../overview.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../basics.html">Basics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../excercises/fractal.html">Fractal Generation</a></li>
-
 <li class="toctree-l1"><a class="reference internal" href="../excercises/nbody.html">N-Body Simulation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../excercises/pi_estimator.html">π-Estimator</a></li>
 </ul>
@@ -596,6 +595,8 @@ document.write(`
 <h1>2. (CPU / Numpy) Fractal Generation Speed Test<a class="headerlink" href="#cpu-numpy-fractal-generation-speed-test" title="Permalink to this heading">#</a></h1>
 <p>Simplest Julia Set computation possible.   All operations <em>look like</em> they could be vectorized, but each point requires a different number of iterations in the escape loop, so it’s not as simple as just cramming together the equivalent NumPy ops from the loop.  Effectively, each point in the complex plane has to be simulated individually (which is highly parallelizable, and great for GPUs).</p>
 <p>This could clearly be optimized and probably get a sizable speedup on CPU, but we’ll see it wouldn’t make much of a difference compared to the GPU/CuPy version.</p>
+<p>Use <code class="docutils literal notranslate"><span class="pre">np.meshgrid()</span></code> to produce the real and imaginary values for each pixel for which we have to compute the escape time.</p>
+<p>NOTE:  Although Numpy has a complex dtype, CuPy does not.  Thus we will have to break down the problem like this anyway for the GPU implementation.  Using the native complex dtype might give us a mild speedup for the CPU version…</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">SIZE</span><span class="o">=</span><span class="mi">768</span>
@@ -615,17 +616,17 @@ document.write(`
     <span class="n">nr</span><span class="p">,</span> <span class="n">nc</span> <span class="o">=</span> <span class="n">np_zmesh_re</span><span class="o">.</span><span class="n">shape</span>
     <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nr</span><span class="p">,</span> <span class="n">nc</span><span class="p">))</span>
     <span class="n">max_escape_iter</span> <span class="o">=</span> <span class="mi">1000</span>
-    
+
     <span class="c1"># Iterate over all pixels, using its point in the complex plane as the starting z-value</span>
     <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nr</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nc</span><span class="p">):</span>
-    
+
             <span class="c1"># The starting z-value for pixel[r,c] is z = a + bi</span>
             <span class="n">a</span> <span class="o">=</span> <span class="n">np_zmesh_re</span><span class="p">[</span><span class="n">r</span><span class="p">,</span> <span class="n">c</span><span class="p">]</span>
             <span class="n">b</span> <span class="o">=</span> <span class="n">np_zmesh_im</span><span class="p">[</span><span class="n">r</span><span class="p">,</span> <span class="n">c</span><span class="p">]</span>
-    
+
             <span class="n">temp_real</span><span class="p">,</span> <span class="n">temp_imag</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span><span class="mi">0</span>
-    
+
             <span class="k">for</span> <span class="nb">iter</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_escape_iter</span><span class="p">):</span>
                 <span class="k">if</span> <span class="n">a</span><span class="o">*</span><span class="n">a</span> <span class="o">+</span> <span class="n">b</span><span class="o">*</span><span class="n">b</span> <span class="o">&gt;</span> <span class="mf">4.0</span><span class="p">:</span>
                     <span class="c1"># Once the squared magnitude is &gt;4.0, it&#39;s never coming back</span>
@@ -636,17 +637,14 @@ document.write(`
                     <span class="n">temp_imag</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">a</span><span class="o">*</span><span class="n">b</span> <span class="o">+</span> <span class="n">c_imag</span>
                     <span class="n">a</span> <span class="o">=</span> <span class="n">temp_real</span>
                     <span class="n">b</span> <span class="o">=</span> <span class="n">temp_imag</span>
-    
+
             <span class="n">out</span><span class="p">[</span><span class="n">r</span><span class="p">,</span> <span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="nb">iter</span><span class="p">))</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">max_escape_iter</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">out</span>
-    
 </pre></div>
 </div>
 </div>
 </div>
-<p>Use <code class="docutils literal notranslate"><span class="pre">np.meshgrid()</span></code> to produce the real and imaginary values for each pixel for which we have to compute the escape time.</p>
-<p>NOTE:  Although Numpy has a complex dtype, CuPy does not.  Thus we will have to break down the problem like this anyway for the GPU implementation.  Using the native complex dtype might give us a mild speedup for the CPU version…</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Constant mesh is the same for all inputs (represent grid in complex plane)</span>
@@ -658,29 +656,6 @@ document.write(`
 </div>
 </div>
 <p>Let’s take a quick look at the mesh.  Complex numbers are <code class="docutils literal notranslate"><span class="pre">a</span> <span class="pre">+</span> <span class="pre">bi</span></code>.  The left mesh is <code class="docutils literal notranslate"><span class="pre">a</span></code>-values, the right mesh is <code class="docutils literal notranslate"><span class="pre">b</span></code>-values</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span><span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
-<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">zmesh_real</span><span class="p">)</span>
-<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;zmesh_real&#39;</span><span class="p">)</span>
-<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">zmesh_imag</span><span class="p">)</span>
-<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;zmesh_imag&#39;</span><span class="p">)</span>
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
-    <span class="n">axs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">SIZE</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">SIZE</span><span class="o">//</span><span class="mi">4</span><span class="p">))</span>
-    <span class="n">axs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="o">+</span><span class="n">EPS</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
-    <span class="n">axs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">SIZE</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">SIZE</span><span class="o">//</span><span class="mi">4</span><span class="p">))</span>
-    <span class="n">axs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_yticklabels</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="o">-</span><span class="n">EPS</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
-    <span class="n">axs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Real Axis&#39;</span><span class="p">)</span>
-    <span class="n">axs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Imaginary Axis&#39;</span><span class="p">)</span>
-<span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">(</span><span class="n">pad</span><span class="o">=</span><span class="mf">0.4</span><span class="p">)</span>
-<span class="n">_</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s1">&#39;Real &amp; Imaginary Parts of Complex Plane&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<img alt="../_images/6186f4d52b29016a1aeba865da92459afad2bc7911fb7299e998d97faafb1bc3.png" src="../_images/6186f4d52b29016a1aeba865da92459afad2bc7911fb7299e998d97faafb1bc3.png" />
-</div>
-</div>
 <p>NOTE:  <code class="docutils literal notranslate"><span class="pre">c</span> <span class="pre">=</span> <span class="pre">-0.8</span> <span class="pre">+</span> <span class="pre">0.156i</span></code> is well-known to produce a visually pleasing fractal for f(z) = z<sup>2</sup> + c</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -715,8 +690,7 @@ document.write(`
 <span class="n">cpu_fractal</span> <span class="o">=</span> <span class="n">cpu_zn2plusc</span><span class="p">(</span><span class="n">zmesh_real</span><span class="p">,</span> <span class="n">zmesh_imag</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
 <span class="n">fig</span><span class="p">,</span><span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="mi">6</span><span class="p">))</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">cpu_fractal</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Julia Set for c = </span><span class="si">{</span><span class="n">a</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1"> + </span><span class="si">{</span><span class="n">b</span><span class="si">:</span><span class="s1">.3f</span><span class="si">}</span><span class="s1">i (Numpy: </span><span class="si">{</span><span class="n">SimpleTimers</span><span class="o">.</span><span class="n">get_sec_per_iter</span><span class="p">(</span><span class="s2">&quot;cpu-fractal&quot;</span><span class="p">)</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1"> sec)&#39;</span><span class="p">)</span>
-<span class="n">relabel_axes</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Julia Set for c = </span><span class="si">{</span><span class="n">a</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1"> + </span><span class="si">{</span><span class="n">b</span><span class="si">:</span><span class="s1">.3f</span><span class="si">}</span><span class="s1">i&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
