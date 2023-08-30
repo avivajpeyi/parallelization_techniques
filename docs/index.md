@@ -16,13 +16,13 @@ We'll go over some [concepts] and [basics] (~10 min + QA) and then break into gr
 | [![][pi_anim]][π-estimation] | [![][nbody_anim]][N-Body sim] | [![][fractal_anim]][Fractals] |
 
 
-[pi_anim]: excercises/pi_estimation.gif
-[nbody_anim]: excercises/out_nb_np/orbit.gif
+[pi_anim]: exercises/pi_estimation.gif
+[nbody_anim]: exercises/out_nb_np/orbit.gif
 [fractal_anim]: https://github.com/avivajpeyi/parallelization_techniques/assets/15642823/87f0494f-c757-4983-921e-99bc7381fc7a
 
-[π-estimation]: excercises/pi_estimator.ipynb
-[N-Body sim]: excercises/nbody.ipynb
-[Fractals]: excercises/fractal.ipynb
+[π-estimation]: exercises/pi_estimator.ipynb
+[N-Body sim]: exercises/nbody.ipynb
+[Fractals]: exercises/fractal.ipynb
 
 [concepts]: overview.md
 [basics]: basics.ipynb
