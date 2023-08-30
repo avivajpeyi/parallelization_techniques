@@ -509,6 +509,7 @@ One Julia set is the set of all complex numbers <span class="math notranslate no
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">process_time</span>
 
 <span class="n">RESOLUTION</span> <span class="o">=</span> <span class="mi">768</span>
 <span class="n">EPSILON</span> <span class="o">=</span> <span class="mf">1e-6</span>
@@ -557,12 +558,13 @@ One Julia set is the set of all complex numbers <span class="math notranslate no
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>it -r 1 -n 1
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">t0</span> <span class="o">=</span> <span class="n">process_time</span><span class="p">()</span>
 <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.156</span>
 <span class="n">julia_fractal</span> <span class="o">=</span> <span class="n">compute_cpu_julia_grid</span><span class="p">(</span>
     <span class="n">MESH_RE</span><span class="p">,</span> <span class="n">MESH_IM</span><span class="p">,</span>
     <span class="n">a</span><span class="p">,</span> <span class="n">b</span>
 <span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;CPU Runtime: </span><span class="si">{</span><span class="n">process_time</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t0</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -641,8 +643,9 @@ This is a bit more technical, but it’s also more flexible and allows us to do 
 <p>Writing a kernel can be better sometimes as we won’t have to incur any costs of having the cde get compiled during execution, and we won’t have to deal with transferring data/memory during computations (only at the end of the computations).</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>it -r 1 -n 1
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">t0</span> <span class="o">=</span> <span class="n">process_time</span><span class="p">()</span>
 <span class="n">out</span> <span class="o">=</span> <span class="n">compute_gpu_julia_grid</span><span class="p">(</span><span class="n">GPU_MESH_RE</span><span class="p">,</span> <span class="n">GPU_MESH_IM</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;GPU Runtime: </span><span class="si">{</span><span class="n">process_time</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t0</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -651,12 +654,12 @@ This is a bit more technical, but it’s also more flexible and allows us to do 
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">c_vals</span> <span class="o">=</span> <span class="p">[</span>
     <span class="p">(</span><span class="o">-</span><span class="mf">0.8</span><span class="p">,</span>   <span class="mf">0.156</span><span class="p">),</span>
-  <span class="p">(</span><span class="o">-</span><span class="mf">0.2</span><span class="p">,</span>  <span class="o">-</span><span class="mf">0.4</span><span class="p">),</span>
-  <span class="p">(</span><span class="o">-</span><span class="mf">0.4</span><span class="p">,</span>   <span class="mf">0.6</span><span class="p">),</span>
-  <span class="p">(</span> <span class="mf">0.4</span><span class="p">,</span>  <span class="o">-</span><span class="mf">0.1</span><span class="p">),</span>
-  <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.7885</span><span class="p">),</span>
-  <span class="p">(</span><span class="mf">0.335</span><span class="p">,</span> <span class="mf">0.335</span><span class="p">)</span>
-          <span class="p">]</span>
+    <span class="p">(</span><span class="o">-</span><span class="mf">0.2</span><span class="p">,</span>  <span class="o">-</span><span class="mf">0.4</span><span class="p">),</span>
+    <span class="p">(</span><span class="o">-</span><span class="mf">0.4</span><span class="p">,</span>   <span class="mf">0.6</span><span class="p">),</span>
+    <span class="p">(</span> <span class="mf">0.4</span><span class="p">,</span>  <span class="o">-</span><span class="mf">0.1</span><span class="p">),</span>
+    <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.7885</span><span class="p">),</span>
+    <span class="p">(</span><span class="mf">0.335</span><span class="p">,</span> <span class="mf">0.335</span><span class="p">)</span>
+<span class="p">]</span>
 
 <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">re</span><span class="p">,</span> <span class="n">im</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">c_vals</span><span class="p">):</span>
     <span class="n">out</span> <span class="o">=</span> <span class="n">compute_gpu_julia_grid</span><span class="p">(</span><span class="n">GPU_MESH_RE</span><span class="p">,</span> <span class="n">GPU_MESH_IM</span><span class="p">,</span> <span class="n">re</span><span class="p">,</span> <span class="n">im</span><span class="p">)</span>
@@ -762,9 +765,10 @@ This is a bit more technical, but it’s also more flexible and allows us to do 
 </section>
 <section id="animation">
 <h2>Animation<a class="headerlink" href="#animation" title="Permalink to this heading">#</a></h2>
-<p>We can make a small animation for fun by allowing <span class="math notranslate nohighlight">\(c\)</span> to change as:</p>
-<p>$<span class="math notranslate nohighlight">\(c = a + bi = (|c|\cos(\theta), |c|\sin(\theta)),\ \theta \in [0, 2\pi]\)</span>$,</p>
-<p>given some selected constant <span class="math notranslate nohighlight">\(|c|\)</span> (for example <span class="math notranslate nohighlight">\(|c| = 0.7885\)</span>).</p>
+<p>We can make a small animation by allowing <span class="math notranslate nohighlight">\(c\)</span> to change as:</p>
+<div class="math notranslate nohighlight">
+\[c = a + ib = |c|\cos\theta + i|c|\sin\theta\ ,\]</div>
+<p>for <span class="math notranslate nohighlight">\(\theta \in [0, 2\pi]\)</span> and given some selected constant <span class="math notranslate nohighlight">\(|c|\)</span> (for example <span class="math notranslate nohighlight">\(|c| = 0.7885\)</span>).</p>
 <p>(you could also try animating by zooming in/out on the fractal by changing the extents of the grid)</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">

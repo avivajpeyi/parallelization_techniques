@@ -444,8 +444,9 @@ Parallel computing can be a way forward.</p>
 <li><p><strong>MISD</strong>: Multiple processors with different instructions on the same data. Say you want to calculate the mean and standard deviation of a dataset. You can do this in parallel by having one processor calculate the mean, and another calculate the standard deviation.</p></li>
 <li><p><strong>MIMD</strong>: Multiple processors with different instructions on different data. Your laptop’s CPU is a MIMD machine. It has multiple cores, and each core can run different instructions on different data. Eg – one core can be running a web browser, another can be running a word processor, and another can be running a python script.</p></li>
 </ol>
-<div class="highlight-note notranslate"><div class="highlight"><pre><span></span>For this tutorial we will focus on the SIMD (Single Instruction Multiple Data) type of parallelization.
-</pre></div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For this tutorial we will focus on the SIMD (Single Instruction Multiple Data) type of parallelization.</p>
 </div>
 </section>
 <section id="vectorization">
@@ -478,7 +479,21 @@ features</a>, but scientific libraries like NumPy and Numba can bypass these res
 </div>
 <p>The output of the htop system monitor on my laptop while
 this code is running:</p>
-<iframe width="560" height="315" src="https://youtu.be/5pV-oFb4jtE?autoplay=1&loop=1&playlist=PLVsZgWtfYk4hP7MUE_K25OAboUdPe4Idh" frameborder="0" allowfullscreen></iframe>​
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p></p></th>
+<th class="head"><p></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Not running</p></td>
+<td><p><img alt="not_running" src="https://github.com/avivajpeyi/parallelization_techniques/assets/15642823/0fb4a33f-ddf1-45e3-8762-8013f5d14f45" /></p></td>
+</tr>
+<tr class="row-odd"><td><p>Running</p></td>
+<td><p><img alt="running" src="https://github.com/avivajpeyi/parallelization_techniques/assets/15642823/38870043-7e25-40ea-8a63-6fdd1bbc122d" /></p></td>
+</tr>
+</tbody>
+</table>
 <p>We can see that 6 of the 12 CPUs on my laptop were running at full speed.</p>
 <p>This is because NumPy’s <code class="docutils literal notranslate"><span class="pre">eigvals</span></code> routine neatly splits up the tasks and
 distributes them to different threads.</p>
@@ -500,8 +515,9 @@ computations in parallel, in place of one fast processor to crunch computations 
 By the early 2000s, views began to shift…</p>
 <p>A GPU (Graphics Processing Unit) is a specialized processor that is designed to perform floating point operations (FLOPs) in parallel, using SIMD (Single Instruction Multiple Data) instructions with a large number of cores.
 <img alt="" src="_images/gpu_vs_cpu.png" /></p>
-<div class="highlight-warning notranslate"><div class="highlight"><pre><span></span>A GPU wont be able to _replace_ CPUs, as it is not designed to do the same things. GPUs are designed to do a few things very well, and CPUs are designed to do many things well. 
-</pre></div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>A GPU wont be able to <em>replace</em> CPUs, as it is not designed to do the same things. GPUs are designed to do a few things very well, and CPUs are designed to do many things well.</p>
 </div>
 <p>In coding, we can use GPUs to do the heavy lifting of crunching numbers in parallel, and CPUs to do the heavy lifting of managing the program flow:
 <img alt="" src="_images/work_distributed.png" /></p>

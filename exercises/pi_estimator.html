@@ -461,11 +461,6 @@ An easy example of starting with the Monte Carlo algorithm is approximating the 
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">imageio</span>
 <span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">rcParams</span>
-<span class="kn">import</span> <span class="nn">glob</span>
-<span class="kn">import</span> <span class="nn">os</span>
-
-<span class="kn">import</span> <span class="nn">colorsys</span>
-<span class="kn">from</span> <span class="nn">matplotlib.colors</span> <span class="kn">import</span> <span class="n">ColorConverter</span><span class="p">,</span> <span class="n">LinearSegmentedColormap</span>
 
 <span class="n">rcParams</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;xtick.major.pad&quot;</span><span class="p">:</span> <span class="s2">&quot;7.0&quot;</span><span class="p">})</span>
 <span class="n">rcParams</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;xtick.major.size&quot;</span><span class="p">:</span> <span class="s2">&quot;7.5&quot;</span><span class="p">})</span>
@@ -533,6 +528,7 @@ An easy example of starting with the Monte Carlo algorithm is approximating the 
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">random</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">pi_estimator</span> <span class="kn">import</span> <span class="n">pi_estimation</span>
+<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">process_time</span>
 
 <span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
@@ -605,8 +601,6 @@ Runtime: 0.008 s
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">process_time</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-
-
 
 
 <span class="k">def</span> <span class="nf">compute_runtime_and_values</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">n_vals</span><span class="p">,</span> <span class="n">n_trials</span><span class="p">):</span>
