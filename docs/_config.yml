@@ -1,7 +1,7 @@
 # Book settings
 # Learn more at https://jupyterbook.org/customize/config.html
 
-title: AL Experiments
+title: Parallelization Techniques
 author: Avi
 
 # Force re-execution of notebooks on each build.
