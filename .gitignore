@@ -2,7 +2,7 @@
 __pycache__/
 *.py[cod]
 *$py.class
-
+docs/basics_multi_demo.py
 !src/workshop_notebook.ipynb
 
 # C extensions

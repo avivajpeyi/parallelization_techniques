@@ -6,4 +6,7 @@ root: index
 chapters:
 - file: overview
 - file: basics
-- glob: excercises/*
+- file: exercises/pi_estimator
+- file: exercises/nbody
+- file: exercises/fractal
+
