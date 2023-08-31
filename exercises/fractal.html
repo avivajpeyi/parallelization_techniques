@@ -9,7 +9,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>CPU and Numpy Implementation &#8212; Parallelization Techniques</title>
+    <title>Fractal Generation &#8212; Parallelization Techniques</title>
   
   
   
@@ -190,11 +190,7 @@ const thebe_selector_output = ".output, .cell_output"
 <li class="toctree-l1"><a class="reference internal" href="../basics.html">Py Parallelization Basics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pi_estimator.html">π-Estimator</a></li>
 <li class="toctree-l1"><a class="reference internal" href="nbody.html">N-Body Simulation</a></li>
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">CPU and Numpy Implementation</a></li>
-
-
-
-
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Fractal Generation</a></li>
 </ul>
 
     </div>
@@ -409,7 +405,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>CPU and Numpy Implementation</h1>
+    <h1>Fractal Generation</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -419,13 +415,12 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">CPU and Numpy Implementation</a></li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#gpu-and-cupy-implementation">GPU and Cupy Implementation</a></li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#plot-runtimes">Plot runtimes</a></li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#animation">Animation</a></li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#questions">Questions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cpu-and-numpy-implementation">CPU and Numpy Implementation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gpu-and-cupy-implementation">GPU and Cupy Implementation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#plot-runtimes">Plot runtimes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#animation">Animation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#questions">Questions</a></li>
 </ul>
-
             </nav>
         </div>
     </div>
@@ -439,7 +434,8 @@ document.write(`
   <a target="_blank" href="https://colab.research.google.com/github/avivajpeyi/parallelization_techniques/blob/main/docs/exercises/fractal.ipynb">
   <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
 </a>
-# Fractal Generation
+<section class="tex2jax_ignore mathjax_ignore" id="fractal-generation">
+<h1>Fractal Generation<a class="headerlink" href="#fractal-generation" title="Permalink to this heading">#</a></h1>
 <p>According to wikipedia,</p>
 <blockquote>
 <div><p>A fractal is a geometric shape containing detailed structure at arbitrarily small scales…</p>
@@ -512,7 +508,7 @@ One Julia set is the set of all complex numbers <span class="math notranslate no
 </ul>
 <p>An interactive plotter can be found <a class="reference external" href="http://www.malinc.se/m/JuliaSets.php">here</a>.</p>
 <section id="cpu-and-numpy-implementation">
-<h1>CPU and Numpy Implementation<a class="headerlink" href="#cpu-and-numpy-implementation" title="Permalink to this heading">#</a></h1>
+<h2>CPU and Numpy Implementation<a class="headerlink" href="#cpu-and-numpy-implementation" title="Permalink to this heading">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -599,7 +595,7 @@ One Julia set is the set of all complex numbers <span class="math notranslate no
 <p><img alt="download-0" src="https://github.com/avivajpeyi/parallelization_techniques/assets/15642823/fbde2eef-3e97-4f1c-9ae5-dc71880ff0eb" /></p>
 </section>
 <section id="gpu-and-cupy-implementation">
-<h1>GPU and Cupy Implementation<a class="headerlink" href="#gpu-and-cupy-implementation" title="Permalink to this heading">#</a></h1>
+<h2>GPU and Cupy Implementation<a class="headerlink" href="#gpu-and-cupy-implementation" title="Permalink to this heading">#</a></h2>
 <p>Although we could do this using Jax/cupy’s pythonic interface, we’ll write an actual <a class="reference external" href="https://developer.nvidia.com/blog/cuda-refresher-cuda-programming-model/">GPU kernel</a> to do the computation (specific code for the GPU).
 This is a bit more technical, but it’s also more flexible and allows us to do things with the GPU (like accessing shared memory, etc).</p>
 <p>See more details on the <a class="reference external" href="https://docs.cupy.dev/en/stable/">Cupy docs</a>.</p>
@@ -697,7 +693,7 @@ This is a bit more technical, but it’s also more flexible and allows us to do 
 </table>
 </section>
 <section id="plot-runtimes">
-<h1>Plot runtimes<a class="headerlink" href="#plot-runtimes" title="Permalink to this heading">#</a></h1>
+<h2>Plot runtimes<a class="headerlink" href="#plot-runtimes" title="Permalink to this heading">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">tqdm.auto</span> <span class="kn">import</span> <span class="n">tqdm</span>
@@ -759,7 +755,7 @@ This is a bit more technical, but it’s also more flexible and allows us to do 
 <p><img alt="runtimes_fractal" src="https://github.com/avivajpeyi/parallelization_techniques/assets/15642823/2b7bd132-d21e-41d5-9d58-41b88f1e7a70" /></p>
 </section>
 <section id="animation">
-<h1>Animation<a class="headerlink" href="#animation" title="Permalink to this heading">#</a></h1>
+<h2>Animation<a class="headerlink" href="#animation" title="Permalink to this heading">#</a></h2>
 <p>We can make a small animation by allowing <span class="math notranslate nohighlight">\(c\)</span> to change as:</p>
 <div class="math notranslate nohighlight">
 \[c = a + ib = |c|\cos\theta + i|c|\sin\theta\ ,\]</div>
@@ -791,7 +787,7 @@ This is a bit more technical, but it’s also more flexible and allows us to do 
 <p><img alt="julia_7885" src="https://github.com/avivajpeyi/parallelization_techniques/assets/15642823/87f0494f-c757-4983-921e-99bc7381fc7a" /></p>
 </section>
 <section id="questions">
-<h1>Questions<a class="headerlink" href="#questions" title="Permalink to this heading">#</a></h1>
+<h2>Questions<a class="headerlink" href="#questions" title="Permalink to this heading">#</a></h2>
 <ol class="arabic simple">
 <li><p>What is the GPU doing that makes it faster than the CPU?</p></li>
 <li><p>Why is the GPU implementation getting slower as the resolution increases?</p></li>
@@ -809,6 +805,7 @@ This is a bit more technical, but it’s also more flexible and allows us to do 
         crossorigin="anonymous"
         async>
 </script></section>
+</section>
 
     <script type="text/x-thebe-config">
     {
@@ -868,13 +865,12 @@ This is a bit more technical, but it’s also more flexible and allows us to do 
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">CPU and Numpy Implementation</a></li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#gpu-and-cupy-implementation">GPU and Cupy Implementation</a></li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#plot-runtimes">Plot runtimes</a></li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#animation">Animation</a></li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#questions">Questions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cpu-and-numpy-implementation">CPU and Numpy Implementation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gpu-and-cupy-implementation">GPU and Cupy Implementation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#plot-runtimes">Plot runtimes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#animation">Animation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#questions">Questions</a></li>
 </ul>
-
   </nav></div>
 
 </div></div>
