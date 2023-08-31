@@ -51,20 +51,17 @@ If you don't fully utilize the core's vector unit, no one else can use them. :(
 
 ## Multiprocessing vs Multithreading
 
-**Multiprocessing** involves running multiple processes concurrently using multiple processors. Processes are chains of instructions (programs). This can happen on one machine with multiple CPUs or across a network of machines, often referred to as a cluster. Each process in multiprocessing has its own memory space.
+**Multiprocessing** involves running multiple processes concurrently using multiple processors. Processes are chains of instructions (programs). This can happen on one machine with multiple CPUs or across a network of machines, often referred to as a cluster. Each process in multiprocessing has its own memory space. For using multiple CPUs on a cluster, we need to use **MPI**, the message passing interface, for passing messages between processes. We won't cover MPI in this tutorial, but if you're interested, check out [mpi4py](https://mpi4py.readthedocs.io/en/stable/), and for GW CBC data analysis, this codebase I helped develop: [Parallel Bilby](https://git.ligo.org/lscsoft/parallel_bilby/).
 
 **Multithreading** is similar but threads share the same memory space. Python's native support for multithreading is limited due to [legacy design
 features](https://wiki.python.org/moin/GlobalInterpreterLock), but scientific libraries like NumPy and Numba can bypass these restrictions for efficient execution.
 
-![](static/multiprocessing_vs_multithreading.png)
+![](static/threads_vs_processes.png)
 
-**MPI** (The message passing interface)is a standard for passing messages between processes. It is a popular way to parallelize code on a cluster of machines. It is not a python library, but there are python wrappers for it (like mpi4py). While `multiprocessing` is a python library that can be used to parallelize code on a single machine, `MPI` allows you to parallelize code across a network of machines.
-
-We won't cover MPI in this tutorial, but if you're interested, check out [mpi4py](https://mpi4py.readthedocs.io/en/stable/), and for GW CBC data analysis, this codebase I helped develop: [Parallel Bilby](https://git.ligo.org/lscsoft/parallel_bilby/).
 
 ### Implicit Multithreading in NumPy
 
-You've most likely been using multithreading in your Python code, especially if you've used NumPy. NumPy cleverly employs multithreading in much of its compiled code. Here is an examples to illustrate this.
+You've most likely been using multithreading and multicores in your Python code, especially if you've used NumPy. NumPy cleverly employs multithreading across cores in much of its compiled code. Here is an examples to illustrate this.
 
 Run `htop` on your computer in one terminal and then run the following code in a python session:
 ```python 
@@ -88,7 +85,7 @@ this code is running:
 [not_running]: https://github.com/avivajpeyi/parallelization_techniques/assets/15642823/0fb4a33f-ddf1-45e3-8762-8013f5d14f45
 [running]: https://github.com/avivajpeyi/parallelization_techniques/assets/15642823/38870043-7e25-40ea-8a63-6fdd1bbc122d
 
-We can see that 6 of the 12 CPUs on my laptop were running at full speed.
+We can see that 6 of the 12 CPUs on my laptop were running at full speed. 
 
 This is because NumPy’s `eigvals` routine neatly splits up the tasks and
 distributes them to different threads.
