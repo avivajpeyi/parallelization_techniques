@@ -429,7 +429,10 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article" role="main">
                   
-  <section class="tex2jax_ignore mathjax_ignore" id="py-parallelization-basics">
+  <a target="_blank" href="https://github.com/avivajpeyi/parallelization_techniques/blob/main/docs/basics.ipynb">
+  <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
+</a>
+<section class="tex2jax_ignore mathjax_ignore" id="py-parallelization-basics">
 <h1>Py Parallelization Basics<a class="headerlink" href="#py-parallelization-basics" title="Permalink to this heading">#</a></h1>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -450,8 +453,10 @@ document.write(`
 <span class="kn">from</span> <span class="nn">tqdm.auto</span> <span class="kn">import</span> <span class="n">tqdm</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
 
+<span class="c1"># not returning anything here, just doing the computation</span>
 <span class="k">def</span> <span class="nf">fn</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="n">x</span> <span class="o">*</span> <span class="n">x</span> <span class="o">+</span> <span class="n">x</span> <span class="o">*</span> <span class="n">x</span> <span class="o">*</span> <span class="n">x</span>
+    <span class="n">val</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="n">x</span> <span class="o">*</span> <span class="n">x</span> <span class="o">+</span> <span class="n">x</span> <span class="o">*</span> <span class="n">x</span> <span class="o">*</span> <span class="n">x</span>
+    <span class="k">pass</span>
 
 
 <span class="k">def</span> <span class="nf">runtime_loops</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
@@ -490,19 +495,20 @@ document.write(`
 <span class="n">N_CPUS</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span>
 
 <span class="k">def</span> <span class="nf">fn</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="n">x</span> <span class="o">*</span> <span class="n">x</span> <span class="o">+</span> <span class="n">x</span> <span class="o">*</span> <span class="n">x</span> <span class="o">*</span> <span class="n">x</span>
+    <span class="n">val</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="n">x</span> <span class="o">*</span> <span class="n">x</span> <span class="o">+</span> <span class="n">x</span> <span class="o">*</span> <span class="n">x</span> <span class="o">*</span> <span class="n">x</span>
+    <span class="k">pass</span>
 
 <span class="k">def</span> <span class="nf">runtime_multiprocessing</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">processes</span><span class="o">=</span><span class="n">N_CPUS</span><span class="p">):</span>
     <span class="n">pool</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">Pool</span><span class="p">(</span><span class="n">processes</span><span class="o">=</span><span class="n">processes</span><span class="p">)</span>
     <span class="n">t0</span> <span class="o">=</span> <span class="n">process_time</span><span class="p">()</span>
-    <span class="n">_</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+    <span class="n">pool</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">process_time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span>
 
 
 <span class="k">def</span> <span class="nf">runtime_multithreading</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">processes</span><span class="o">=</span><span class="n">N_CPUS</span><span class="p">):</span>
     <span class="n">pool</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">ThreadPool</span><span class="p">(</span><span class="n">processes</span><span class="o">=</span><span class="n">processes</span><span class="p">)</span>
     <span class="n">t0</span> <span class="o">=</span> <span class="n">process_time</span><span class="p">()</span>
-    <span class="n">_</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+    <span class="n">pool</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">process_time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span>
 </pre></div>
 </div>
@@ -519,13 +525,12 @@ document.write(`
 </div>
 </div>
 </div>
-<p><strong>Why is multithreading slower?</strong></p>
-<ul class="simple">
-<li><p>There is overhead associated with managing threads, so you don’t want to use it for basic tasks (like the example).</p></li>
-<li><p>Threading in Python is not great for parallel CPU computation but is perfect for I/O operations such as web scraping, because the processor is sitting idle waiting for data.</p></li>
-<li><p>For CPU intensive processes (doing math), there is little benefit to using the threading module.</p></li>
-</ul>
-<p>Multithreading is best suited for I/O-bound tasks, while multiprocessing is best suited for CPU-bound tasks.</p>
+<p><strong>Why is one slower?</strong></p>
+<p>Multithreading is more lightweight because most system and memory resources are shared by the threads. BUT there is overhead associated with managing threads, so you don’t want to use it for basic tasks.</p>
+<p>In addition, the fact that multiple threads all access a shared pool of memory is extremely convenient for numerical programming.</p>
+<p>On the other hand, multiprocessing is more flexible and can be distributed across clusters.</p>
+<p>Generally multithreading is best suited for I/O-bound tasks, while multiprocessing is best suited for CPU-bound tasks.</p>
+<p>NOTE: On Colab, this may not work as expected…</p>
 </section>
 <section id="gpu-tpu">
 <h2>GPU + TPU<a class="headerlink" href="#gpu-tpu" title="Permalink to this heading">#</a></h2>
@@ -566,7 +571,7 @@ document.write(`
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
     <span class="n">t0</span> <span class="o">=</span> <span class="n">process_time</span><span class="p">()</span>
-    <span class="n">_</span> <span class="o">=</span> <span class="n">jax_fn</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">block_until_ready</span><span class="p">()</span>
+    <span class="n">jax_fn</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">block_until_ready</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">process_time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span>
 
 
@@ -575,7 +580,7 @@ document.write(`
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
     <span class="n">t0</span> <span class="o">=</span> <span class="n">process_time</span><span class="p">()</span>
-    <span class="n">_</span> <span class="o">=</span> <span class="n">fn</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+    <span class="n">fn</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">process_time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span>
 
 

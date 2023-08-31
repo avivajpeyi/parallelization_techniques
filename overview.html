@@ -454,7 +454,6 @@ Parallel computing can be a way forward.</p>
 <p>Vectorization is a vertical scaling technique that uses a single CPU core or a GPU more effectively.
 You can compute N operations at the same time <em>if they are all the same operation.</em> (SIMD)</p>
 <center><img src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Flappweb.in2p3.fr%2F~paubert%2FASTERICS_HPC%2Fimages%2Fvectorization.png&f=1&nofb=1&ipt=41dd4a8a2e498cb41cf7052d8d95476d87f7dabb43cabd0e73afda12dc80530d&ipo=images" width="50%"></center>
-#%% md
 <p>If you don’t fully utilize all cores, that’s okay; someone else’s work can fill the gaps.
 If you don’t fully utilize the core’s vector unit, no one else can use them. :(</p>
 </section>
@@ -464,6 +463,8 @@ If you don’t fully utilize the core’s vector unit, no one else can use them.
 <p><strong>Multithreading</strong> is similar but threads share the same memory space. Python’s native support for multithreading is limited due to <a class="reference external" href="https://wiki.python.org/moin/GlobalInterpreterLock">legacy design
 features</a>, but scientific libraries like NumPy and Numba can bypass these restrictions for efficient execution.</p>
 <p><img alt="" src="static/multiprocessing_vs_multithreading.png" /></p>
+<p><strong>MPI</strong> (The message passing interface)is a standard for passing messages between processes. It is a popular way to parallelize code on a cluster of machines. It is not a python library, but there are python wrappers for it (like mpi4py). While <code class="docutils literal notranslate"><span class="pre">multiprocessing</span></code> is a python library that can be used to parallelize code on a single machine, <code class="docutils literal notranslate"><span class="pre">MPI</span></code> allows you to parallelize code across a network of machines.</p>
+<p>We won’t cover MPI in this tutorial, but if you’re interested, check out <a class="reference external" href="https://mpi4py.readthedocs.io/en/stable/">mpi4py</a>, and for GW CBC data analysis, this codebase I helped develop: <a class="reference external" href="https://git.ligo.org/lscsoft/parallel_bilby/">Parallel Bilby</a>.</p>
 <section id="implicit-multithreading-in-numpy">
 <h3>Implicit Multithreading in NumPy<a class="headerlink" href="#implicit-multithreading-in-numpy" title="Permalink to this heading">#</a></h3>
 <p>You’ve most likely been using multithreading in your Python code, especially if you’ve used NumPy. NumPy cleverly employs multithreading in much of its compiled code. Here is an examples to illustrate this.</p>
@@ -521,7 +522,7 @@ By the early 2000s, views began to shift…</p>
 </div>
 <p>In coding, we can use GPUs to do the heavy lifting of crunching numbers in parallel, and CPUs to do the heavy lifting of managing the program flow:
 <img alt="" src="_images/work_distributed.png" /></p>
-<p>Very relavent video of <a class="reference external" href="https://www.youtube.com/watch?v=Tc_JWE_ypEk">several thousand chickens fighting a few T-rexes</a></p>
+<p>Very relevant video of <a class="reference external" href="https://www.youtube.com/watch?v=Tc_JWE_ypEk">several thousand chickens fighting a few T-rexes</a></p>
 </section>
 </section>
 

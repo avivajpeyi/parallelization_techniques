@@ -431,7 +431,10 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article" role="main">
                   
-  <section class="tex2jax_ignore mathjax_ignore" id="fractal-generation">
+  <a target="_blank" href="https://github.com/avivajpeyi/parallelization_techniques/blob/main/docs/exercises/fractal.ipynb">
+  <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
+</a>
+<section class="tex2jax_ignore mathjax_ignore" id="fractal-generation">
 <h1>Fractal Generation<a class="headerlink" href="#fractal-generation" title="Permalink to this heading">#</a></h1>
 <p>According to wikipedia,</p>
 <blockquote>
@@ -571,7 +574,9 @@ One Julia set is the set of all complex numbers <span class="math notranslate no
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">plot_julia_grid</span><span class="p">(</span><span class="n">julia_fractal</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">colormap</span><span class="o">=</span><span class="s1">&#39;magma&#39;</span><span class="p">):</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="k">def</span> <span class="nf">plot_julia_grid</span><span class="p">(</span><span class="n">julia_fractal</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">colormap</span><span class="o">=</span><span class="s1">&#39;magma&#39;</span><span class="p">):</span>
     <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">julia_fractal</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">colormap</span><span class="p">)</span>
     <span class="c1"># text in the top left corner</span>
@@ -600,8 +605,8 @@ This is a bit more technical, but it’s also more flexible and allows us to do 
 
 <span class="c1"># Create a GPU/CuPy grid of complex values (`cp.*` instead of `np.*`)</span>
 <span class="n">GPU_MESH_RE</span><span class="p">,</span> <span class="n">GPU_MESH_IM</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span>
-    <span class="n">cp</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">MESH_MIN</span><span class="p">,</span> <span class="n">MESH_MAX</span><span class="p">,</span> <span class="p">(</span><span class="n">MESH_SIZE</span> <span class="o">+</span> <span class="n">EPSILON</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">RESOLUTION</span> <span class="o">-</span> <span class="mi">1</span><span class="p">),</span><span class="n">dtype</span><span class="o">=</span><span class="n">cp</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
-    <span class="n">cp</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">MESH_MIN</span><span class="p">,</span> <span class="n">MESH_MAX</span><span class="p">,</span> <span class="p">(</span><span class="n">MESH_SIZE</span> <span class="o">+</span> <span class="n">EPSILON</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">RESOLUTION</span> <span class="o">-</span> <span class="mi">1</span><span class="p">),</span><span class="n">dtype</span><span class="o">=</span><span class="n">cp</span><span class="o">.</span><span class="n">float32</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">cp</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">MESH_MIN</span><span class="p">,</span> <span class="n">MESH_MAX</span><span class="p">,</span> <span class="p">(</span><span class="n">MESH_SIZE</span> <span class="o">+</span> <span class="n">EPSILON</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">RESOLUTION</span> <span class="o">-</span> <span class="mi">1</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">cp</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+    <span class="n">cp</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">MESH_MIN</span><span class="p">,</span> <span class="n">MESH_MAX</span><span class="p">,</span> <span class="p">(</span><span class="n">MESH_SIZE</span> <span class="o">+</span> <span class="n">EPSILON</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">RESOLUTION</span> <span class="o">-</span> <span class="mi">1</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">cp</span><span class="o">.</span><span class="n">float32</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 <span class="p">)</span>
 
 
@@ -710,23 +715,14 @@ This is a bit more technical, but it’s also more flexible and allows us to do 
     <span class="n">runtimes</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">resolution_sizes</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;GPU&#39;</span><span class="p">):</span>
         <span class="n">mesh_re</span><span class="p">,</span> <span class="n">mesh_im</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span>
-            <span class="n">cp</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">MESH_MIN</span><span class="p">,</span> <span class="n">MESH_MAX</span><span class="p">,</span> <span class="p">(</span><span class="n">MESH_SIZE</span> <span class="o">+</span> <span class="n">EPSILON</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">res</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)),</span>
-            <span class="n">cp</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">MESH_MIN</span><span class="p">,</span> <span class="n">MESH_MAX</span><span class="p">,</span> <span class="p">(</span><span class="n">MESH_SIZE</span> <span class="o">+</span> <span class="n">EPSILON</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">res</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">cp</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">MESH_MIN</span><span class="p">,</span> <span class="n">MESH_MAX</span><span class="p">,</span> <span class="p">(</span><span class="n">MESH_SIZE</span> <span class="o">+</span> <span class="n">EPSILON</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">res</span> <span class="o">-</span> <span class="mi">1</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">cp</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+            <span class="n">cp</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">MESH_MIN</span><span class="p">,</span> <span class="n">MESH_MAX</span><span class="p">,</span> <span class="p">(</span><span class="n">MESH_SIZE</span> <span class="o">+</span> <span class="n">EPSILON</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">res</span> <span class="o">-</span> <span class="mi">1</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">cp</span><span class="o">.</span><span class="n">float32</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
         <span class="p">)</span>
         <span class="n">t0</span> <span class="o">=</span> <span class="n">process_time</span><span class="p">()</span>
         <span class="n">compute_gpu_julia_grid</span><span class="p">(</span><span class="n">mesh_re</span><span class="p">,</span> <span class="n">mesh_im</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
         <span class="n">runtimes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">process_time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">runtimes</span>
 
-
-<span class="k">def</span> <span class="nf">plot_runtimes</span><span class="p">(</span><span class="n">resolution_sizes</span><span class="p">,</span> <span class="n">cpu_runtimes</span><span class="p">,</span> <span class="n">gpu_runtimes</span><span class="p">):</span>
-    <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">resolution_sizes</span><span class="p">,</span> <span class="n">cpu_runtimes</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;CPU&#39;</span><span class="p">)</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">resolution_sizes</span><span class="p">,</span> <span class="n">gpu_runtimes</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;GPU&#39;</span><span class="p">)</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Resolution&#39;</span><span class="p">)</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Runtime (s)&#39;</span><span class="p">)</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
-    <span class="k">return</span> <span class="n">fig</span>
 
 <span class="n">resolution_sizes</span> <span class="o">=</span> <span class="p">[</span><span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">]</span>
 <span class="n">cpu_runtimes</span> <span class="o">=</span> <span class="n">collect_cpu_runtimes</span><span class="p">(</span><span class="n">resolution_sizes</span><span class="p">)</span>
@@ -749,11 +745,6 @@ This is a bit more technical, but it’s also more flexible and allows us to do 
     <span class="n">ax</span><span class="o">.</span><span class="n">set_xscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">fig</span>
-
-<span class="n">resolution_sizes</span> <span class="o">=</span> <span class="p">[</span><span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">1024</span><span class="p">]</span>
-<span class="n">cpu_runtimes</span> <span class="o">=</span> <span class="n">collect_cpu_runtimes</span><span class="p">(</span><span class="n">resolution_sizes</span><span class="p">)</span>
-<span class="n">gpu_runtimes</span> <span class="o">=</span> <span class="n">collect_gpu_runtimes</span><span class="p">(</span><span class="n">resolution_sizes</span><span class="p">)</span>
-
 
 <span class="n">fig</span> <span class="o">=</span> <span class="n">plot_runtimes</span><span class="p">(</span><span class="n">resolution_sizes</span><span class="p">,</span> <span class="n">cpu_runtimes</span><span class="p">,</span> <span class="n">gpu_runtimes</span><span class="p">)</span>
 <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s2">&quot;runtimes_fractal.png&quot;</span><span class="p">)</span>

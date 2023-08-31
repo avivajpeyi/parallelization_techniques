@@ -429,7 +429,10 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article" role="main">
                   
-  <section class="tex2jax_ignore mathjax_ignore" id="n-body-simulation">
+  <a target="_blank" href="https://github.com/avivajpeyi/parallelization_techniques/blob/main/docs/exercises/nbody.ipynb">
+  <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
+</a>
+<section class="tex2jax_ignore mathjax_ignore" id="n-body-simulation">
 <h1>N-Body Simulation<a class="headerlink" href="#n-body-simulation" title="Permalink to this heading">#</a></h1>
 <p>Below we have a basic implementation of an N-body simulation. We will use this as a baseline to compare against a vectorized/Cupy/multiprocessing implementations.</p>
 <p>There are two main functions:</p>
@@ -883,17 +886,23 @@ Basic &#39;Loop&#39; time:
 </div>
 </div>
 </div>
-<p><img alt="nbody_runtimes.png" src="exercises/nbody_runtimes.png" /></p>
+<p><img alt="nbody_runtimes" src="https://github.com/avivajpeyi/parallelization_techniques/assets/15642823/ecadb4e0-1170-4030-a798-b05f666ecb94" /></p>
 <p>Lets make a slightly longer gif with more particles using the vectorized implementation.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">positions</span> <span class="o">=</span> <span class="n">nbody_runner_np</span><span class="p">(</span><span class="n">N</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">random_seed</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">tEnd</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
-<span class="n">plot_particle_gif</span><span class="p">(</span><span class="n">positions</span><span class="p">,</span> <span class="n">outdir</span><span class="o">=</span><span class="s1">&#39;out_nb_np&#39;</span><span class="p">,</span> <span class="n">dur</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">positions</span> <span class="o">=</span> <span class="n">nbody_runner_np</span><span class="p">(</span><span class="n">N</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">random_seed</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">tEnd</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
 <script type="application/vnd.jupyter.widget-view+json">{"model_id": "ac43e911701e474eb6bc97bdf30eb32e", "version_major": 2, "version_minor": 0}</script><script type="application/vnd.jupyter.widget-view+json">{"model_id": "fc57f1cff2d94495a8c28cf37067b863", "version_major": 2, "version_minor": 0}</script><div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Gif saved to out_nb_np/orbit.gif
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plot_particle_gif</span><span class="p">(</span><span class="n">positions</span><span class="p">,</span> <span class="n">outdir</span><span class="o">=</span><span class="s1">&#39;out_nb_np&#39;</span><span class="p">,</span> <span class="n">dur</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -906,8 +915,10 @@ Basic &#39;Loop&#39; time:
 <li><p>What will happen to the speed of the vectorized implementation as the number of particles increases? Why?</p></li>
 <li><p>What is the runtime complexity of the basic implementation? What about the vectorized implementation?</p></li>
 <li><p>Can you think of any other ways to speed up the simulation? Plot the runtimes.</p></li>
-<li><p>Can you make a <code class="docutils literal notranslate"><span class="pre">GPU</span></code> implementation using <code class="docutils literal notranslate"><span class="pre">cupy</span></code>? (feel free to paste the vectorized code in chatGPT and ask it for help).
-<strong>Bonus</strong>:</p></li>
+<li><p>Can you make a <code class="docutils literal notranslate"><span class="pre">GPU</span></code> implementation using <code class="docutils literal notranslate"><span class="pre">cupy</span></code>? (feel free to paste the vectorized code in chatGPT and ask it for help).</p></li>
+</ol>
+<p><strong>Bonus</strong>:</p>
+<ol class="arabic simple" start="5">
 <li><p>Can you make a <code class="docutils literal notranslate"><span class="pre">GPU</span></code> implementation such that the simulation runs in <code class="docutils literal notranslate"><span class="pre">O(N)</span></code> time?</p></li>
 </ol>
 <p>I’ll release the answers after the workshop. (Please remind me if i dont lol)</p>
