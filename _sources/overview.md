@@ -25,7 +25,7 @@ Parallel computing can be a way forward.
 
 ## Flynn's taxonomy and "types" of parallelization
 
-![](static/flynns.png)
+![](static/flynn.png)
 
 
 1. **SISD**: Single processor, single instruction, and data stream. This is the good old sequential computing we're used to.
