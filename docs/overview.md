@@ -44,7 +44,7 @@ Vectorization is a vertical scaling technique that uses a single CPU core or a G
 You can compute N operations at the same time _if they are all the same operation._ (SIMD)
 
 <center><img src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Flappweb.in2p3.fr%2F~paubert%2FASTERICS_HPC%2Fimages%2Fvectorization.png&f=1&nofb=1&ipt=41dd4a8a2e498cb41cf7052d8d95476d87f7dabb43cabd0e73afda12dc80530d&ipo=images" width="50%"></center>
-#%% md
+
 
 If you don't fully utilize all cores, that's okay; someone else's work can fill the gaps.
 If you don't fully utilize the core's vector unit, no one else can use them. :( 
@@ -58,6 +58,9 @@ features](https://wiki.python.org/moin/GlobalInterpreterLock), but scientific li
 
 ![](static/multiprocessing_vs_multithreading.png)
 
+**MPI** (The message passing interface)is a standard for passing messages between processes. It is a popular way to parallelize code on a cluster of machines. It is not a python library, but there are python wrappers for it (like mpi4py). While `multiprocessing` is a python library that can be used to parallelize code on a single machine, `MPI` allows you to parallelize code across a network of machines.
+
+We won't cover MPI in this tutorial, but if you're interested, check out [mpi4py](https://mpi4py.readthedocs.io/en/stable/), and for GW CBC data analysis, this codebase I helped develop: [Parallel Bilby](https://git.ligo.org/lscsoft/parallel_bilby/).
 
 ### Implicit Multithreading in NumPy
 
@@ -118,5 +121,5 @@ In coding, we can use GPUs to do the heavy lifting of crunching numbers in paral
 ![](static/work_distributed.png)
 
 
-Very relavent video of [several thousand chickens fighting a few T-rexes](https://www.youtube.com/watch?v=Tc_JWE_ypEk)
+Very relevant video of [several thousand chickens fighting a few T-rexes](https://www.youtube.com/watch?v=Tc_JWE_ypEk)
 
