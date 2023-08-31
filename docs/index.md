@@ -9,7 +9,7 @@ The goals of this tutorial:
 
 We'll go over some [concepts] and [basics] (~10 min + QA) and then break into groups of 2-3 to work on some exercises.
 
-
+In the exercises, you'll be generating animations like these:
 |        [π-estimation]        |         [N-Body sim]          |          [Fractals]           |
 |:----------------------------:|:-----------------------------:|:-----------------------------:|
 |      Multiprocessing         |       Vectorization           |         GPU-kernel            |
